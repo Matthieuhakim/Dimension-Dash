@@ -83,5 +83,15 @@ public class PlayerController : MonoBehaviour
         //TODO: Check which objects refresh jump or kill player
         //Make landing perfectly on the edge of the square
         canJump = true;
+        switch (collision.gameObject.tag)
+        {
+            case StringHelper.OBSTACLE_TAG:
+
+                GameManager.Instance.GameOver();
+                return;
+            default:
+                canJump = true;
+                return;
+        }
     }
 }

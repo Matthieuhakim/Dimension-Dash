@@ -9,12 +9,13 @@ public class LevelManager : MonoBehaviour
 
     private Dimension currentDimension = Dimension.REALITY;
 
-    public DimensionSwitcher[] levelObjects;
+    private DimensionSwitcher[] levelObjects;
 
 
     public void Awake()
     {
         Instance = this;
+        levelObjects = FindObjectsOfType<DimensionSwitcher>();
     }
 
 

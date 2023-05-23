@@ -14,4 +14,4 @@ public abstract class DimensionSwitcher : MonoBehaviour
     }
 }
 
-public enum Dimension { REALITY, SHADOW };
+public enum Dimension { REALITY, SHADOW, BOTH };

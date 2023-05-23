@@ -5,11 +5,11 @@ using UnityEngine;
 public class ColorSwitch : DimensionSwitcher
 {
     [SerializeField]
-    private Color realityColor;
+    protected Color realityColor;
     [SerializeField]
-    private Color shadowColor;
+    protected Color shadowColor;
 
-    private SpriteRenderer spriteRenderer;
+    protected SpriteRenderer spriteRenderer;
 
 
 
@@ -34,7 +34,7 @@ public class ColorSwitch : DimensionSwitcher
                 return;
 
             default:
-                throw new System.Exception("Dimension: " + dimension +" not implemented for " + gameObject.name);
+                throw new System.Exception("Dimension: " + dimension + " not implemented for " + gameObject.name);
 
         }
     }
