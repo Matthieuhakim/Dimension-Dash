@@ -16,6 +16,7 @@ public class LevelManager : MonoBehaviour
     {
         Instance = this;
         levelObjects = FindObjectsOfType<DimensionSwitcher>();
+
     }
 
 

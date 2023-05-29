@@ -19,6 +19,9 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody2D playerRb;
 
+    [SerializeField]
+    private ParticleSystem deathParticles;
+    private SpriteRenderer spriteRenderer;
 
     private bool canJump = true;
 
@@ -27,19 +30,25 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         playerRb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        MoveRight();
-        HandleMouseClick();
-        HandleKeyboardInput();
 
-        if (!canJump)
+        if (GameManager.Instance.isPlaying)
         {
-            StartCoroutine(AdjustRotation());
+            MoveRight();
+            HandleMouseClick();
+            HandleKeyboardInput();
+
+            if (!canJump)
+            {
+                StartCoroutine(AdjustRotation());
+            }
+
         }
 
     }
@@ -127,6 +136,13 @@ public class PlayerController : MonoBehaviour
                 }
                 
                 return;
+
+            case StringHelper.FINISHLINE_TAG:
+
+
+                GameManager.Instance.FinishLevel();
+
+                return;
             default:
                 canJump = true;
                 return;
@@ -180,6 +196,17 @@ public class PlayerController : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    public void Explode()
+    {
+
+        ParticleSystem particles = Instantiate(deathParticles, transform.position, transform.rotation).GetComponent<ParticleSystem>();
+
+        var main = particles.main;
+        main.startColor = spriteRenderer.color;
+
+        gameObject.SetActive(false);
     }
 
 }

@@ -7,31 +7,91 @@ public class GameManager : MonoBehaviour
 {
 
     public static GameManager Instance { get; private set; }
-    // Start is called before the first frame update
-    void Awake()
+
+    private PlayerController player;
+
+    private LevelCompleteUI levelCompleteUI;
+
+    [HideInInspector]
+    public bool isPlaying = true;
+
+    private int attempt = 0;
+
+
+    public void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(Instance);
+            SceneManager.sceneLoaded += OnLevelStart;
+
         }
         else if (Instance != this)
         {
-            Destroy(gameObject); // Destroy the GameObject, this component is attached to
+            Destroy(gameObject); 
         }
-
     }
 
-    // Update is called once per frame
-    void Update()
+
+
+    private void OnLevelStart(Scene scene, LoadSceneMode mode)
     {
-        
+
+        player = GameObject.FindGameObjectWithTag(StringHelper.PLAYER_TAG).GetComponent<PlayerController>();
+        levelCompleteUI = GameObject.FindGameObjectWithTag(StringHelper.LEVEL_COMPLETE_UI_TAG).GetComponent<LevelCompleteUI>();
+
+        isPlaying = true;
+
+        IncreaseAttempt();
     }
 
     public void GameOver()
     {
-        //TODO: Implement Method
-        Debug.Log("Game Over");
+        isPlaying = false;
+        player.Explode();
+        StartCoroutine(WaitAndRestartLevel());
+    }
+
+    public void FinishLevel()
+    {
+        isPlaying = false;
+        player.Explode();
+        levelCompleteUI.ActivateScreen();
+    }
+
+    private IEnumerator WaitAndRestartLevel()
+    {
+        yield return new WaitForSeconds(1);
+        RestartCurrentLevel();
+    }
+
+    public void IncreaseAttempt()
+    {
+        attempt += 1;
+    }
+
+    public int GetAttempt()
+    {
+        return attempt;
+    }
+
+
+
+    private void RestartCurrentLevel()
+    {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void ResetLevel()
+    {
+
+        attempt = 0;
+        RestartCurrentLevel();
+
+    }
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnLevelStart;
     }
 }

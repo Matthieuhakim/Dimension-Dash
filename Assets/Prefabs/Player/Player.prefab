@@ -76,7 +76,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 99f3fc7e2669348d49475d9d3f8ed615, type: 3}
   m_Color: {r: 0.99215686, g: 1, b: 0.09019608, a: 1}
   m_FlipX: 0
@@ -149,6 +149,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jumpForce: 16
   jumpTorque: -1.4
+  deathParticles: {fileID: 1246878015497396847, guid: e1b2b009796a04bfdbf1801c762882b3, type: 3}
 --- !u!114 &241399706
 MonoBehaviour:
   m_ObjectHideFlags: 0

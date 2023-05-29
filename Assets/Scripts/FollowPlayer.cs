@@ -8,6 +8,7 @@ public class FollowPlayer : MonoBehaviour
     private float delay = 1.5f;
 
     private PlayerController playerController;
+
     private float speed;
 
     // Start is called before the first frame update
@@ -20,7 +21,10 @@ public class FollowPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(Vector2.right * speed * Time.deltaTime);
+        if (GameManager.Instance.isPlaying)
+        {
+            transform.Translate(Vector2.right * speed * Time.deltaTime);
+        }
 
     }
 }

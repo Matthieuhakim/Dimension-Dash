@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Obstacle
   - Platform
+  - Finish Line
+  - Level Complete UI
   layers:
   - Default
   - TransparentFX
