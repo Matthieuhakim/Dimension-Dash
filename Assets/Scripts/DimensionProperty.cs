@@ -14,13 +14,13 @@ public class DimensionProperty : ColorSwitch
     private float disabledAlpha = 0.4f;
 
 
-    private BoxCollider2D boxCollider;
+    private Collider2D spriteCollider;
 
 
     // Start is called before the first frame update
     public override void Start()
     {
-        boxCollider = GetComponent<BoxCollider2D>();
+        spriteCollider = GetComponent<Collider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         //Take color of prefered dimension at start
@@ -51,14 +51,14 @@ public class DimensionProperty : ColorSwitch
     //Properties when in prefered dimension
     protected virtual void ActivateObject()
     {
-        boxCollider.enabled = true;
+        spriteCollider.enabled = true;
         spriteRenderer.color = ChangeAlpha(spriteRenderer.color, 1f);
     }
 
     //Properties when not in prefered dimension
     protected virtual void DeactivateObject()
     {
-        boxCollider.enabled = false;
+        spriteCollider.enabled = false;
         spriteRenderer.color = ChangeAlpha(spriteRenderer.color, disabledAlpha);
 
     }

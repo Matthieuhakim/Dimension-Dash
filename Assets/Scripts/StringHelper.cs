@@ -7,5 +7,7 @@ public class StringHelper
     public const string FINISHLINE_TAG = "Finish Line";
     public const string LEVEL_COMPLETE_UI_TAG = "Level Complete UI";
 
+    public const string GROUND_LAYER = "Ground";
+
 
 }

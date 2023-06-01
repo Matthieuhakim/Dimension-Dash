@@ -15,7 +15,7 @@ public class FollowPlayer : MonoBehaviour
     void Awake()
     {
         playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
-        speed = playerController.Speed - delay;
+        speed = playerController.playerSpeed - delay;
     }
 
     // Update is called once per frame
@@ -23,7 +23,7 @@ public class FollowPlayer : MonoBehaviour
     {
         if (GameManager.Instance.isPlaying)
         {
-            transform.Translate(Vector2.right * speed * Time.deltaTime);
+            transform.Translate(speed * Time.deltaTime * Vector2.right);
         }
 
     }

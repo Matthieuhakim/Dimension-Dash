@@ -5,11 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
-    private float playerSpeed = 10f;
-    public float Speed
-    {
-        get { return playerSpeed; }
-    }
+    public float playerSpeed = 10f;
 
     [SerializeField]
     private float jumpForce = 12f;
@@ -41,37 +37,38 @@ public class PlayerController : MonoBehaviour
         if (GameManager.Instance.isPlaying)
         {
             MoveRight();
-            HandleMouseClick();
+            HandleTouchInput();
             HandleKeyboardInput();
 
-            if (!canJump)
-            {
-                StartCoroutine(AdjustRotation());
-            }
-
         }
-
     }
 
 
-    private void HandleMouseClick()
+    private void HandleTouchInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.touchCount > 0)
         {
-            //Jump on right side click, switch dimension on left side click
-            if (Input.mousePosition.x >= (Screen.width / 2))
+            foreach (Touch touch in Input.touches)
             {
-
-                Jump();
+                if (touch.position.x < (Screen.width / 2))
+                {
+                    if (touch.phase == TouchPhase.Began)
+                    {
+                        SwitchDimension();
+                    }
+                }
+                else
+                {
+                    if (touch.phase == TouchPhase.Began || touch.phase == TouchPhase.Stationary || touch.phase == TouchPhase.Moved)
+                    {
+                        Jump();
+                    }
+                }
+                
             }
-            else
-            {
-                SwitchDimension();
-            }
-
-
         }
     }
+
 
     private void HandleKeyboardInput()
     {
@@ -92,7 +89,7 @@ public class PlayerController : MonoBehaviour
 
     private void MoveRight()
     {
-        transform.Translate(Vector2.right * playerSpeed * Time.deltaTime, Space.World);
+        transform.Translate(playerSpeed * Time.deltaTime * Vector2.right, Space.World);
     }
 
 
@@ -100,9 +97,11 @@ public class PlayerController : MonoBehaviour
     {
         if (canJump)
         {
-            playerRb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            playerRb.AddTorque(jumpTorque, ForceMode2D.Impulse);
             canJump = false;
+
+            
+            playerRb.AddForce(jumpForce * Vector2.up , ForceMode2D.Impulse);
+            playerRb.AddTorque(jumpTorque, ForceMode2D.Impulse);
         }
         
     }
@@ -114,8 +113,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        //TODO: Check which objects refresh jump or kill player
-        //Make landing perfectly on the edge of the square
+
         switch (collision.gameObject.tag)
         {
             case StringHelper.OBSTACLE_TAG:
@@ -132,9 +130,10 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    canJump = true;
+
+                    LandPlayer();
                 }
-                
+
                 return;
 
             case StringHelper.FINISHLINE_TAG:
@@ -144,7 +143,8 @@ public class PlayerController : MonoBehaviour
 
                 return;
             default:
-                canJump = true;
+
+                LandPlayer();
                 return;
         }
     }
@@ -164,39 +164,6 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
-    private IEnumerator AdjustRotation()
-    {
-        float rotationThreshold = 0.8f; // Adjust this value to control the threshold for snapping rotation
-
-        while (playerRb.velocity.y < 0f)
-        {
-
-            RaycastHit2D hit = Physics2D.Raycast(playerRb.position, Vector2.down, Mathf.Infinity, LayerMask.GetMask("Ground"));
-
-            if (hit.collider != null)
-            {
-                Vector2 groundPosition = hit.point;
-
-                // Calculate the distance to the ground
-                float distanceToGround = Mathf.Abs(playerRb.position.y - groundPosition.y);
-                // Check if the player is close to the ground
-                if (distanceToGround <= rotationThreshold)
-                {
-                    // Snap rotation to the nearest 90-degree angle
-                    float currentRotation = playerRb.rotation;
-                    float targetRotation = Mathf.Round(currentRotation / 90f) * 90f;
-
-                    playerRb.rotation = targetRotation;
-
-                    // Reset angular velocity to stop spinning
-                    playerRb.angularVelocity = 0f;
-
-                }
-            }
-
-            yield return null;
-        }
-    }
 
     public void Explode()
     {
@@ -207,6 +174,32 @@ public class PlayerController : MonoBehaviour
         main.startColor = spriteRenderer.color;
 
         gameObject.SetActive(false);
+    }
+
+
+    private void LandPlayer()
+    {
+        FreezeRotation();
+        canJump = true;
+    }
+
+    private void FreezeRotation()
+    {
+        //Calculate targetRotation
+        float currentRotation = playerRb.rotation % 360;
+        if (currentRotation < 0) currentRotation += 360;
+
+        float targetRotation = Mathf.Round(currentRotation / 90f) * 90f;
+
+
+        playerRb.rotation = targetRotation;
+
+        // Reset angular velocity to stop spinning
+        playerRb.angularVelocity = 0f;
+
+        // Reset the Rigidbody's vertical velocity
+        playerRb.velocity = new Vector2(playerRb.velocity.x, 0f);
+
     }
 
 }
