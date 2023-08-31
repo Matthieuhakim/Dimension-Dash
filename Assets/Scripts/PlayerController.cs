@@ -77,13 +77,10 @@ public class PlayerController : MonoBehaviour
         {
             Jump();
         }
-        else if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.A))
         {
             SwitchDimension();
         }
-
-
-        
     }
 
     private void MoveRight()
