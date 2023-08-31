@@ -73,9 +73,8 @@ public class PlayerController : MonoBehaviour
     private void HandleKeyboardInput()
     {
         //Jump on D, switch dimension on A
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKey(KeyCode.D))
         {
-
             Jump();
         }
         else if (Input.GetKeyDown(KeyCode.A))
