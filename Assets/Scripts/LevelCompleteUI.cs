@@ -1,28 +1,26 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class LevelCompleteUI : MonoBehaviour
 {
+    [Tooltip("Root of the screen; hidden until the level is completed.")]
+    [SerializeField]
+    private GameObject panel;
     [SerializeField]
     private TMP_Text attemptText;
-
     [SerializeField]
     private Button restartButton;
 
-    private void SetChildrenState(bool state)
+    private void Awake()
     {
-        foreach (Transform child in gameObject.transform)
-        {
-            child.gameObject.SetActive(state);
-        }
+        panel.SetActive(false);
+        restartButton.onClick.AddListener(() => GameManager.Instance.ReplayLevel());
     }
 
-    public void ActivateScreen()
+    public void Show(int attempts)
     {
-        SetChildrenState(true);
-        attemptText.text = "Total attempts: " + GameManager.Instance.GetAttempt();
-        restartButton.onClick.RemoveAllListeners();
-        restartButton.onClick.AddListener(GameManager.Instance.ResetLevel);
+        attemptText.text = $"Total attempts: {attempts}";
+        panel.SetActive(true);
     }
 }

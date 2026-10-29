@@ -1,41 +1,77 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
+// Per-scene level flow: current dimension, play state, death and completion.
+// Runs before other scripts so Instance exists when listeners enable.
+[DefaultExecutionOrder(-100)]
 public class LevelManager : MonoBehaviour
 {
+    public enum State { Playing, Dead, Complete }
 
     public static LevelManager Instance { get; private set; }
 
-    private Dimension currentDimension = Dimension.REALITY;
+    public static event Action<Dimension> DimensionChanged;
 
-    private DimensionSwitcher[] levelObjects;
+    [SerializeField]
+    private PlayerController player;
+    [SerializeField]
+    private LevelCompleteUI levelCompleteUI;
 
-    public void Awake()
+    [SerializeField]
+    private Dimension startDimension = Dimension.Reality;
+    [SerializeField]
+    private float restartDelay = 1f;
+    [Tooltip("The player dies when falling below this height.")]
+    [SerializeField]
+    private float killHeight = -10f;
+
+    public Dimension CurrentDimension { get; private set; }
+    public State CurrentState { get; private set; } = State.Playing;
+    public bool IsPlaying => CurrentState == State.Playing;
+    public float KillHeight => killHeight;
+
+    private void Awake()
     {
         Instance = this;
-        levelObjects = FindObjectsByType<DimensionSwitcher>();
-
+        CurrentDimension = startDimension;
+        GameManager.Instance.BeginAttempt(gameObject.scene.name);
     }
 
-    public Dimension GetCurrentDimension()
+    private void OnDestroy()
     {
-        return currentDimension;
+        if (Instance == this) Instance = null;
     }
 
     public void SwitchDimension()
     {
-        if(currentDimension == Dimension.REALITY)
-        {
-            currentDimension = Dimension.SHADOW;
-        }
-        else
-        {
-            currentDimension = Dimension.REALITY;
-        }
+        if (!IsPlaying) return;
 
-        foreach(DimensionSwitcher levelObject in levelObjects)
-        {
-            levelObject.SwitchDimension(currentDimension);
-        }
+        CurrentDimension = CurrentDimension == Dimension.Reality ? Dimension.Shadow : Dimension.Reality;
+        DimensionChanged?.Invoke(CurrentDimension);
     }
 
+    public void KillPlayer()
+    {
+        if (!IsPlaying) return;
+
+        CurrentState = State.Dead;
+        player.Explode();
+        StartCoroutine(RestartAfterDelay());
+    }
+
+    public void CompleteLevel()
+    {
+        if (!IsPlaying) return;
+
+        CurrentState = State.Complete;
+        player.Stop();
+        levelCompleteUI.Show(GameManager.Instance.Attempt);
+    }
+
+    private IEnumerator RestartAfterDelay()
+    {
+        yield return new WaitForSeconds(restartDelay);
+        GameManager.Instance.RestartLevel();
+    }
 }

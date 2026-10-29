@@ -7,13 +7,22 @@ obstacles solid or ghosted.
 ## Layout
 
 - `Assets/Scripts/` — all game code (flat, no asmdef, compiles into `Assembly-CSharp`)
-  - `GameManager` — persistent singleton (`DontDestroyOnLoad`): play state, attempts, restart
-  - `LevelManager` — per-scene singleton: current `Dimension`, broadcasts switches to every `DimensionSwitcher`
-  - `DimensionSwitcher` (abstract) → `ColorSwitch` → `DimensionProperty`: objects reacting to dimension switches
-  - `PlayerController` — movement, jump, collisions, input (Input System: `Keyboard.current` / `Touchscreen.current`)
+  - `GameManager` — self-bootstrapping persistent singleton (`RuntimeInitializeOnLoadMethod`, not placed in
+    scenes): attempt counter, `RestartLevel` / `ReplayLevel`, target frame rate
+  - `LevelManager` — per-scene singleton (`DefaultExecutionOrder(-100)`): play state (Playing/Dead/Complete),
+    current `Dimension`, static `DimensionChanged` event, kill height, death/finish flow
+  - `Dimension` — `Dimension { Reality, Shadow }` (world state), `DimensionPresence { Reality, Shadow, Both }`
+  - `DimensionListener` (abstract) — subscribes to `DimensionChanged`; tints a SpriteRenderer, Tilemap or Camera
+    - `DimensionColor` — recolours with the world (player, floor, camera background)
+    - `DimensionObject` — exists in one dimension or both; ghosted (no collision, faded) when absent
+  - `PlayerController` — velocity-driven run, fixed-arc jump (buffer + coyote), overlap-box ground check,
+    contact-normal deaths, visual-only spin; input via serialized `InputAction`s + touch halves
+  - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow
+  - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen
   - `StringHelper` — tag/layer name constants; keep in sync with Tags & Layers in ProjectSettings
 - `Assets/Scenes/TestScene.unity` — the only scene in the build (contains level 1)
-- `Assets/Prefabs/` — Player, Platforms, Obstacles, UI
+- `Assets/Tiles/` — `Block` and `Spike` tiles, their sprites, and the `Level` tile palette
+- `Assets/Prefabs/` — Player, Level (Finish Line), FX (death particles), UI
 - `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings
 - `Assets/TextMesh Pro/` — imported TMP essentials; do not edit
 
@@ -21,9 +30,27 @@ Sprites use URP's `Sprite-Lit-Default` material (no 2D lights in the scene, so t
 brightness); particles use `ParticlesUnlit`. Active input handling is Input System only — the legacy
 `Input` class throws at runtime.
 
+## Building levels
+
+A level is a `Grid` (cell size 1) with one Tilemap per role, painted from the `Level` palette:
+`Floor` (DimensionColor), `Blocks_Both/Reality/Shadow` (Ground layer, DimensionObject) and
+`Spikes_Both/Reality/Shadow` (`Obstacle` tag, DimensionObject). Each tilemap has a static Rigidbody2D and a
+TilemapCollider2D merged into a CompositeCollider2D (geometry type Polygons — the ground check needs it).
+
+- Keep all geometry on whole cells. The floor top is y = 0; the player is 1.25 tall, a spike 0.87.
+- Jump height is ~2.45 above the surface: step-ups of 2 cells max. A row the player runs under needs
+  2 free cells above the surface, 3 if a hanging spike is there.
+- Rotate a hanging spike 180° per tile (tile transform), not with a separate tilemap.
+- Tiles painted from a script don't rebuild the colliders: toggle the TilemapCollider2D and call
+  `CompositeCollider2D.GenerateGeometry()`, then save the scene.
+- A new level scene needs a `LevelManager` (player + UI references), the Player and Canvas prefabs, and a
+  Main Camera with `CameraController` + `DimensionColor`. No GameManager.
+
 ## Controls
 
-Keyboard: `D` (hold) = jump, `A` = switch dimension. Touch: right half = jump, left half = switch.
+Keyboard: `D` / `Space` / `Up` (hold) = jump, `A` = switch dimension; gamepad South = jump, West = switch
+(bindings are editable on the Player prefab). Touch: right half = jump (hold), left half = switch. A touch
+keeps the role of the half it started in.
 
 ## Driving the Unity Editor
 
@@ -35,8 +62,14 @@ package; see the `unity:unity-cli` skill). Use it instead of guessing:
 - `unity command console get` — read the Editor console.
 - `unity command script eval -- --code '...'` — run C# in the Editor (method body: no `using`, fully
   qualify types). Use it for scene/prefab/asset/settings changes.
-- Play-mode check: `editor.playmode start`, `runtime simulate_key -- --key A`, `capture game_view`,
-  `editor.playmode stop`. Save captures outside `Assets/`.
+- Play-mode check: `editor.playmode start`, `capture game_view`, `editor.playmode stop`.
+  `capture game_view --save_path` resolves relative to `Assets/`: delete the capture with
+  `AssetDatabase.DeleteAsset` right after copying it out.
+- `runtime simulate_key` doesn't hold keys while the Editor is unfocused (the Input System resets devices).
+  To hold input in a test, add a virtual Keyboard device and queue its state every frame from
+  `InputSystem.onBeforeUpdate`; remove the device and reload the domain afterwards.
+- The play view is usually the Device Simulator (notched phone). `PlayModeWindow.SetViewType` /
+  `SetCustomRenderingResolution` switch to the Game view at a given resolution; restore the Simulator after.
 
 ## Working rules
 
@@ -46,6 +79,8 @@ package; see the `unity:unity-cli` skill). Use it instead of guessing:
 - When creating, moving or renaming a script, the class name must match the file name, and the `.meta`
   must move with it (use `AssetDatabase.MoveAsset`), or references in scenes/prefabs break.
 - Never read or edit `Library/`, `Temp/`, `Logs/`, `obj/`, `UserSettings/` — generated by Unity.
-- Prefer Unity 6 APIs: `Rigidbody2D.linearVelocity`, `FindObjectsByType<T>()`, `FindFirstObjectByType`.
+- Prefer Unity 6 APIs: `Rigidbody2D.linearVelocity`, `FindObjectsByType<T>()`, `FindAnyObjectByType`
+  (`FindFirstObjectByType` and `GetInstanceID` are obsolete in 6.6 — use `GetEntityId`).
+- Subscribe to `LevelManager.DimensionChanged` (derive from `DimensionListener`) instead of searching the scene.
 - Physics-driven objects should be moved in `FixedUpdate` via the Rigidbody, not `transform.Translate`.
 - Keep the package list minimal: add a package only when code or assets actually use it.

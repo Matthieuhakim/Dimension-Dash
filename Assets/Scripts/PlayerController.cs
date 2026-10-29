@@ -1,187 +1,272 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.Serialization;
 
+// Auto-runner: constant forward speed, fixed-arc jump, dimension switching, collision deaths.
+// Physics rotation is frozen; only the Visual child spins.
+[RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class PlayerController : MonoBehaviour
 {
-
-    public float playerSpeed = 10f;
-
+    [Header("Movement")]
+    [FormerlySerializedAs("playerSpeed")]
     [SerializeField]
-    private float jumpForce = 12f;
+    private float runSpeed = 10f;
+    [FormerlySerializedAs("jumpForce")]
     [SerializeField]
-    private float jumpTorque = -1f;
+    private float jumpVelocity = 16f;
+    [Tooltip("A jump pressed this long before landing still happens.")]
+    [SerializeField]
+    private float jumpBufferTime = 0.1f;
+    [Tooltip("A jump pressed this long after leaving the ground still happens.")]
+    [SerializeField]
+    private float coyoteTime = 0.05f;
 
-    private Rigidbody2D playerRb;
+    [Header("Collision")]
+    [SerializeField]
+    private LayerMask groundLayers;
+    [SerializeField]
+    private float groundCheckDepth = 0.05f;
+    [Tooltip("Ground contacts steeper than this (walls, ceilings) kill the player.")]
+    [SerializeField, Range(0f, 90f)]
+    private float maxLandingAngle = 45f;
 
+    [Header("Visuals")]
+    [SerializeField]
+    private Transform visual;
+    [SerializeField]
+    private SpriteRenderer spriteRenderer;
+    [Tooltip("Rotation of the visual over one full jump.")]
+    [SerializeField]
+    private float airSpinDegrees = -180f;
+    [SerializeField]
+    private float landingSnapSpeed = 720f;
     [SerializeField]
     private ParticleSystem deathParticles;
-    private SpriteRenderer spriteRenderer;
 
-    private bool canJump = true;
+    [Header("Input")]
+    [SerializeField]
+    private InputAction jumpAction = CreateButton("Jump", "<Keyboard>/d", "<Keyboard>/space", "<Keyboard>/upArrow", "<Gamepad>/buttonSouth");
+    [SerializeField]
+    private InputAction switchAction = CreateButton("Switch Dimension", "<Keyboard>/a", "<Gamepad>/buttonWest");
 
-    void Start()
+    private Rigidbody2D body;
+    private BoxCollider2D box;
+
+    // The player spawns on the ground; corrected by the first ground check.
+    private bool isGrounded = true;
+    private bool jumpHeld;
+    private float lastGroundedTime = float.NegativeInfinity;
+    private float lastJumpPressTime = float.NegativeInfinity;
+    private float airSpinSpeed;
+
+    private static LevelManager Level => LevelManager.Instance;
+
+    private void Reset()
     {
-        playerRb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-
+        groundLayers = LayerMask.GetMask(StringHelper.GROUND_LAYER);
     }
 
-    void Update()
+    private void Awake()
     {
+        body = GetComponent<Rigidbody2D>();
+        box = GetComponent<BoxCollider2D>();
 
-        if (GameManager.Instance.isPlaying)
+        float airTime = 2f * jumpVelocity / (Mathf.Abs(Physics2D.gravity.y) * body.gravityScale);
+        airSpinSpeed = airSpinDegrees / airTime;
+
+        // Jump held through a respawn (the key is already down when the action enables) still counts.
+        jumpAction.wantsInitialStateCheck = true;
+    }
+
+    private void OnEnable()
+    {
+        jumpAction.Enable();
+        switchAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        jumpAction.Disable();
+        switchAction.Disable();
+    }
+
+    private void Update()
+    {
+        if (!Level.IsPlaying) return;
+
+        ReadTouches(out bool touchJumpPressed, out bool touchJumpHeld, out bool touchSwitchPressed);
+
+        if (jumpAction.WasPressedThisFrame() || touchJumpPressed)
         {
-            MoveRight();
-            HandleTouchInput();
-            HandleKeyboardInput();
-
+            lastJumpPressTime = Time.time;
         }
+        jumpHeld = jumpAction.IsPressed() || touchJumpHeld;
+
+        if (switchAction.WasPressedThisFrame() || touchSwitchPressed)
+        {
+            Level.SwitchDimension();
+        }
+
+        UpdateVisualRotation();
     }
 
-    private void HandleTouchInput()
+    private void FixedUpdate()
     {
-        if (Touchscreen.current == null) return;
+        if (!Level.IsPlaying) return;
 
-        foreach (TouchControl touch in Touchscreen.current.touches)
+        if (body.position.y < Level.KillHeight)
         {
-            if (!touch.isInProgress) continue;
+            Level.KillPlayer();
+            return;
+        }
 
-            if (touch.position.ReadValue().x < (Screen.width / 2))
+        Vector2 velocity = body.linearVelocity;
+        velocity.x = runSpeed;
+
+        isGrounded = velocity.y <= 0.01f && CheckGround();
+        if (isGrounded)
+        {
+            lastGroundedTime = Time.time;
+            velocity.y = 0f;
+        }
+
+        bool canJump = Time.time - lastGroundedTime <= coyoteTime;
+        bool wantsJump = jumpHeld || Time.time - lastJumpPressTime <= jumpBufferTime;
+        if (canJump && wantsJump)
+        {
+            velocity.y = jumpVelocity;
+            isGrounded = false;
+            SnapVisualRotation();
+            lastGroundedTime = float.NegativeInfinity;
+            lastJumpPressTime = float.NegativeInfinity;
+        }
+
+        body.linearVelocity = velocity;
+    }
+
+    // Thin box just under the feet.
+    private bool CheckGround()
+    {
+        Bounds bounds = box.bounds;
+        Vector2 center = new Vector2(bounds.center.x, bounds.min.y - groundCheckDepth * 0.5f);
+        Vector2 size = new Vector2(bounds.size.x * 0.9f, groundCheckDepth);
+        return Physics2D.OverlapBox(center, size, 0f, groundLayers) != null;
+    }
+
+    // Left half: switch dimension (on press). Right half: jump (held).
+    // A touch keeps the role of the half it started in, even if it slides across.
+    private static void ReadTouches(out bool jumpPressed, out bool jumpHeld, out bool switchPressed)
+    {
+        jumpPressed = jumpHeld = switchPressed = false;
+
+        Touchscreen touchscreen = Touchscreen.current;
+        if (touchscreen == null) return;
+
+        float halfWidth = Screen.width * 0.5f;
+        foreach (TouchControl touch in touchscreen.touches)
+        {
+            bool pressedThisFrame = touch.press.wasPressedThisFrame;
+            if (!pressedThisFrame && !touch.press.isPressed) continue;
+
+            bool leftHalf = touch.startPosition.ReadValue().x < halfWidth;
+            if (leftHalf)
             {
-                if (touch.press.wasPressedThisFrame)
-                {
-                    SwitchDimension();
-                }
+                switchPressed |= pressedThisFrame;
             }
             else
             {
-                Jump();
+                jumpPressed |= pressedThisFrame;
+                jumpHeld |= touch.press.isPressed;
             }
         }
     }
 
-    private void HandleKeyboardInput()
+    private void UpdateVisualRotation()
     {
-        if (Keyboard.current == null) return;
-
-        //Jump on D, switch dimension on A
-        if (Keyboard.current.dKey.isPressed)
+        float angle = visual.localEulerAngles.z;
+        if (isGrounded)
         {
-            Jump();
+            float target = Mathf.Round(angle / 90f) * 90f;
+            angle = Mathf.MoveTowardsAngle(angle, target, landingSnapSpeed * Time.deltaTime);
         }
-        if (Keyboard.current.aKey.wasPressedThisFrame)
+        else
         {
-            SwitchDimension();
+            angle += airSpinSpeed * Time.deltaTime;
         }
+        visual.localRotation = Quaternion.Euler(0f, 0f, angle);
     }
 
-    private void MoveRight()
+    // Every jump starts from a flat face, so the spin always lands flat even on instant re-jumps.
+    private void SnapVisualRotation()
     {
-        transform.Translate(playerSpeed * Time.deltaTime * Vector2.right, Space.World);
+        float angle = Mathf.Round(visual.localEulerAngles.z / 90f) * 90f;
+        visual.localRotation = Quaternion.Euler(0f, 0f, angle);
     }
 
-    private void Jump()
+    private void OnCollisionEnter2D(Collision2D collision) => CheckDeadlyCollision(collision);
+
+    // Stay matters for large merged colliders (tilemaps): a wall can be part of the collider already being touched.
+    private void OnCollisionStay2D(Collision2D collision) => CheckDeadlyCollision(collision);
+
+    private void CheckDeadlyCollision(Collision2D collision)
     {
-        if (canJump)
+        if (!Level.IsPlaying) return;
+
+        if (collision.collider.CompareTag(StringHelper.OBSTACLE_TAG))
         {
-            canJump = false;
-
-            playerRb.AddForce(jumpForce * Vector2.up , ForceMode2D.Impulse);
-            playerRb.AddTorque(jumpTorque, ForceMode2D.Impulse);
+            Level.KillPlayer();
+            return;
         }
-        
-    }
 
-    private void SwitchDimension()
-    {
-        LevelManager.Instance.SwitchDimension();
-    }
+        if ((groundLayers.value & (1 << collision.collider.gameObject.layer)) == 0) return;
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-
-        switch (collision.gameObject.tag)
+        for (int i = 0; i < collision.contactCount; i++)
         {
-            case StringHelper.OBSTACLE_TAG:
+            // The normal points from the ground towards the player: up when landing on top.
+            Vector2 normal = collision.GetContact(i).normal;
 
-                GameManager.Instance.GameOver();
-                return;
+            // A normal pointing forward comes from geometry behind the player (e.g. the corner of a ledge being left).
+            if (normal.x > 0.1f) continue;
 
-            case StringHelper.PLATFORM_TAG:
-                bool isDeadly = IsDeadlyCollision(collision);
-
-                if (isDeadly)
-                {
-                    GameManager.Instance.GameOver();
-                }
-                else
-                {
-
-                    LandPlayer();
-                }
-
-                return;
-
-            case StringHelper.FINISHLINE_TAG:
-
-                GameManager.Instance.FinishLevel();
-
-                return;
-            default:
-
-                LandPlayer();
-                return;
-        }
-    }
-
-    private bool IsDeadlyCollision(Collision2D collision)
-    {
-        foreach (ContactPoint2D point in collision.contacts)
-        {
-            // If the collision happened from the side 
-            if (point.normal.y < 0.9f)
+            if (Vector2.Angle(normal, Vector2.up) > maxLandingAngle)
             {
-                return true;
+                Level.KillPlayer();
+                return;
             }
         }
+    }
 
-        return false;
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (Level.IsPlaying && other.CompareTag(StringHelper.FINISHLINE_TAG))
+        {
+            Level.CompleteLevel();
+        }
     }
 
     public void Explode()
     {
-
-        ParticleSystem particles = Instantiate(deathParticles, transform.position, transform.rotation).GetComponent<ParticleSystem>();
-
-        var main = particles.main;
+        ParticleSystem particles = Instantiate(deathParticles, transform.position, Quaternion.identity);
+        ParticleSystem.MainModule main = particles.main;
         main.startColor = spriteRenderer.color;
 
         gameObject.SetActive(false);
     }
 
-    private void LandPlayer()
+    public void Stop()
     {
-        FreezeRotation();
-        canJump = true;
+        body.linearVelocity = Vector2.zero;
+        body.simulated = false;
     }
 
-    private void FreezeRotation()
+    private static InputAction CreateButton(string name, params string[] bindings)
     {
-        //Calculate targetRotation
-        float currentRotation = playerRb.rotation % 360;
-        if (currentRotation < 0) currentRotation += 360;
-
-        float targetRotation = Mathf.Round(currentRotation / 90f) * 90f;
-
-        playerRb.rotation = targetRotation;
-
-        // Reset angular velocity to stop spinning
-        playerRb.angularVelocity = 0f;
-
-        // Reset the Rigidbody's vertical velocity
-        playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, 0f);
-
+        var action = new InputAction(name, InputActionType.Button);
+        foreach (string binding in bindings)
+        {
+            action.AddBinding(binding);
+        }
+        return action;
     }
-
 }
