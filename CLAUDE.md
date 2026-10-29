@@ -18,10 +18,13 @@ obstacles solid or ghosted.
   - `PlayerController` — velocity-driven run, fixed-arc jump (buffer + coyote), overlap-box ground check,
     contact-normal deaths, visual-only spin; input via serialized `InputAction`s + touch halves
   - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow
+  - `DimensionTile` (Tile) — authoring tile: kind (Floor/Block/Spike) + `DimensionPresence` + runtime tile
+  - `LevelTilemap` — on load, copies the authoring tilemap's tiles onto the runtime layers, then hides it
   - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen
   - `StringHelper` — tag/layer name constants; keep in sync with Tags & Layers in ProjectSettings
 - `Assets/Scenes/TestScene.unity` — the only scene in the build (contains level 1)
-- `Assets/Tiles/` — `Block` and `Spike` tiles, their sprites, and the `Level` tile palette
+- `Assets/Tiles/` — the 7 `DimensionTile`s (Floor, Block/Spike × Both/Reality/Shadow), the `Level` palette,
+  and `Runtime/` (the white Block/Spike tiles the layers use; not for painting)
 - `Assets/Prefabs/` — Player, Level (Finish Line), FX (death particles), UI
 - `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings
 - `Assets/TextMesh Pro/` — imported TMP essentials; do not edit
@@ -32,17 +35,25 @@ brightness); particles use `ParticlesUnlit`. Active input handling is Input Syst
 
 ## Building levels
 
-A level is a `Grid` (cell size 1) with one Tilemap per role, painted from the `Level` palette:
-`Floor` (DimensionColor), `Blocks_Both/Reality/Shadow` (Ground layer, DimensionObject) and
-`Spikes_Both/Reality/Shadow` (`Obstacle` tag, DimensionObject). Each tilemap has a static Rigidbody2D and a
-TilemapCollider2D merged into a CompositeCollider2D (geometry type Polygons — the ground check needs it).
+A level is a `Grid` (cell size 1) with:
+
+- `Level` — the **only tilemap you paint on** (`LevelTilemap` component). Paint any tile from the `Level`
+  palette here; mixed sections (any kind, any dimension) can be selected and moved together. Tiles show their
+  dimension's colour as a preview.
+- `Runtime Layers` — `Floor` (DimensionColor), `Blocks_Both/Reality/Shadow` (Ground layer, DimensionObject),
+  `Spikes_Both/Reality/Shadow` (`Obstacle` tag, DimensionObject). **Keep them empty**: `LevelTilemap` fills them
+  on load. Each has a static Rigidbody2D and a TilemapCollider2D merged into a CompositeCollider2D (geometry
+  type Polygons — the ground check needs it). Dimension colours and ghost alpha are set on these layers;
+  keep the authoring tiles' preview colours in sync.
+
+Rules:
 
 - Keep all geometry on whole cells. The floor top is y = 0; the player is 1.25 tall, a spike 0.87.
 - Jump height is ~2.45 above the surface: step-ups of 2 cells max. A row the player runs under needs
   2 free cells above the surface, 3 if a hanging spike is there.
-- Rotate a hanging spike 180° per tile (tile transform), not with a separate tilemap.
-- Tiles painted from a script don't rebuild the colliders: toggle the TilemapCollider2D and call
-  `CompositeCollider2D.GenerateGeometry()`, then save the scene.
+- Rotate a hanging spike 180° with `[` / `]` on the brush; the rotation is copied to the runtime layer.
+- To add a new tile type, create a `DimensionTile` asset (kind, presence, runtime tile) and add it to the
+  palette; a new kind also needs a runtime layer entry on `LevelTilemap`.
 - A new level scene needs a `LevelManager` (player + UI references), the Player and Canvas prefabs, and a
   Main Camera with `CameraController` + `DimensionColor`. No GameManager.
 
