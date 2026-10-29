@@ -113,11 +113,6 @@ InitTestScene*.unity*
 # macOS
 .DS_Store
 
-# WebGL builds / Unity Play sharing artifacts
-/[Ww]eb[Gg][Ll] [Bb]uilds/
-/connectwebgl.zip
-/webgl_sharing
-
 # Editors (keep shared VS Code config)
 .vscode/*
 !.vscode/extensions.json

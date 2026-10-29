@@ -8,8 +8,7 @@
         "Logs/": true,
         "obj/": true,
         "bin/": true,
-        "UserSettings/": true,
-        "WebGL Builds/": true
+        "UserSettings/": true
     },
     "search.exclude": {
         "**/*.unity": true,

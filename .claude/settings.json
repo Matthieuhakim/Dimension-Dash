@@ -15,8 +15,7 @@
       "Read(./Temp/**)",
       "Read(./Logs/**)",
       "Read(./obj/**)",
-      "Read(./UserSettings/**)",
-      "Read(./WebGL Builds/**)"
+      "Read(./UserSettings/**)"
     ]
   },
   "enabledPlugins": {
