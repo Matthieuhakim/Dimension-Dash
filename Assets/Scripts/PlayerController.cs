@@ -1,6 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,7 +12,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float jumpTorque = -1f;
 
-
     private Rigidbody2D playerRb;
 
     [SerializeField]
@@ -21,8 +20,6 @@ public class PlayerController : MonoBehaviour
 
     private bool canJump = true;
 
-
-    // Start is called before the first frame update
     void Start()
     {
         playerRb = GetComponent<Rigidbody2D>();
@@ -30,7 +27,6 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    // Update is called once per frame
     void Update()
     {
 
@@ -43,41 +39,38 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     private void HandleTouchInput()
     {
-        if (Input.touchCount > 0)
+        if (Touchscreen.current == null) return;
+
+        foreach (TouchControl touch in Touchscreen.current.touches)
         {
-            foreach (Touch touch in Input.touches)
+            if (!touch.isInProgress) continue;
+
+            if (touch.position.ReadValue().x < (Screen.width / 2))
             {
-                if (touch.position.x < (Screen.width / 2))
+                if (touch.press.wasPressedThisFrame)
                 {
-                    if (touch.phase == TouchPhase.Began)
-                    {
-                        SwitchDimension();
-                    }
+                    SwitchDimension();
                 }
-                else
-                {
-                    if (touch.phase == TouchPhase.Began || touch.phase == TouchPhase.Stationary || touch.phase == TouchPhase.Moved)
-                    {
-                        Jump();
-                    }
-                }
-                
+            }
+            else
+            {
+                Jump();
             }
         }
     }
 
-
     private void HandleKeyboardInput()
     {
+        if (Keyboard.current == null) return;
+
         //Jump on D, switch dimension on A
-        if (Input.GetKey(KeyCode.D))
+        if (Keyboard.current.dKey.isPressed)
         {
             Jump();
         }
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Keyboard.current.aKey.wasPressedThisFrame)
         {
             SwitchDimension();
         }
@@ -88,14 +81,12 @@ public class PlayerController : MonoBehaviour
         transform.Translate(playerSpeed * Time.deltaTime * Vector2.right, Space.World);
     }
 
-
     private void Jump()
     {
         if (canJump)
         {
             canJump = false;
 
-            
             playerRb.AddForce(jumpForce * Vector2.up , ForceMode2D.Impulse);
             playerRb.AddTorque(jumpTorque, ForceMode2D.Impulse);
         }
@@ -134,7 +125,6 @@ public class PlayerController : MonoBehaviour
 
             case StringHelper.FINISHLINE_TAG:
 
-
                 GameManager.Instance.FinishLevel();
 
                 return;
@@ -144,7 +134,6 @@ public class PlayerController : MonoBehaviour
                 return;
         }
     }
-
 
     private bool IsDeadlyCollision(Collision2D collision)
     {
@@ -160,7 +149,6 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
-
     public void Explode()
     {
 
@@ -171,7 +159,6 @@ public class PlayerController : MonoBehaviour
 
         gameObject.SetActive(false);
     }
-
 
     private void LandPlayer()
     {
@@ -186,7 +173,6 @@ public class PlayerController : MonoBehaviour
         if (currentRotation < 0) currentRotation += 360;
 
         float targetRotation = Mathf.Round(currentRotation / 90f) * 90f;
-
 
         playerRb.rotation = targetRotation;
 

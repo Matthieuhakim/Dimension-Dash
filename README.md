@@ -1,6 +1,6 @@
 # Dimension Dash
 
-A 2D mobile auto-runner built with Unity. Run, jump, and flip between two dimensions — REALITY and
+A 2D mobile auto-runner built with Unity 6 (URP 2D, Input System). Run, jump, and flip between two dimensions — REALITY and
 SHADOW — to make platforms and obstacles solid or ghosted.
 
 ## Controls
@@ -23,8 +23,9 @@ Assets/
   Scenes/      Game scenes (in build settings)
   Scripts/     Game code
   Prefabs/     Player, platforms, obstacles, UI
-  Sprites/ Materials/ Particles/ Fonts/ Audio/
-  TextMesh Pro/, Adaptive Performance/, UI Toolkit/   Package-generated, don't edit
+  Settings/    URP pipeline asset, 2D renderer, global settings
+  Sprites/ Materials/ Particles/ Fonts/
+  TextMesh Pro/  TMP essentials, don't edit
 Packages/      Package manifest
 ProjectSettings/
 ```
@@ -43,3 +44,6 @@ ProjectSettings/
   ```
 
 - Builds go in `Builds/` (git-ignored).
+- AI tooling: `CLAUDE.md` holds project context for Claude Code. The `com.unity.pipeline` package lets
+  the [Unity CLI](https://unity.com/install.sh) (`unity status`, `unity recompile`, `unity command ...`)
+  drive the open Editor.

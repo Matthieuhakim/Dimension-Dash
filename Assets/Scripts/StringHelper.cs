@@ -9,5 +9,4 @@ public class StringHelper
 
     public const string GROUND_LAYER = "Ground";
 
-
 }

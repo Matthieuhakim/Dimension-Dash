@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -11,14 +9,12 @@ public class LevelManager : MonoBehaviour
 
     private DimensionSwitcher[] levelObjects;
 
-
     public void Awake()
     {
         Instance = this;
-        levelObjects = FindObjectsOfType<DimensionSwitcher>();
+        levelObjects = FindObjectsByType<DimensionSwitcher>();
 
     }
-
 
     public Dimension GetCurrentDimension()
     {

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ColorSwitch : DimensionSwitcher
@@ -11,15 +9,12 @@ public class ColorSwitch : DimensionSwitcher
 
     protected SpriteRenderer spriteRenderer;
 
-
-
     public override void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         base.Start();
 
     }
-
 
     public override void SwitchDimension(Dimension dimension)
     {
@@ -38,9 +33,5 @@ public class ColorSwitch : DimensionSwitcher
 
         }
     }
-
-
-
-
 
 }

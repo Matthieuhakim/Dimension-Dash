@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DimensionProperty : ColorSwitch
@@ -13,11 +11,8 @@ public class DimensionProperty : ColorSwitch
 
     private float disabledAlpha = 0.4f;
 
-
     private Collider2D spriteCollider;
 
-
-    // Start is called before the first frame update
     public override void Start()
     {
         spriteCollider = GetComponent<Collider2D>();
@@ -28,7 +23,6 @@ public class DimensionProperty : ColorSwitch
 
         SwitchDimension(LevelManager.Instance.GetCurrentDimension());
     }
-
 
     //Activate or deactivate object if it is dimension dependant
     public override void SwitchDimension(Dimension dimension)
@@ -75,11 +69,9 @@ public class DimensionProperty : ColorSwitch
         }
     }
 
-
     private Color ChangeAlpha(Color color, float a)
     {
         return new Color(color.r, color.g, color.b, a);
     }
-
 
 }

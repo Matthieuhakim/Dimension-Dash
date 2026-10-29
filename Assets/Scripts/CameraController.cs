@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
@@ -16,7 +14,6 @@ public class CameraController : MonoBehaviour
         SetPosition(playerTransform.position.x + xOffset, playerTransform.position.y + yOffset);
     }
 
-
     void LateUpdate()
     {
 
@@ -26,7 +23,6 @@ public class CameraController : MonoBehaviour
         //TODO: follow y position with delay
         SetPosition(xPosition, yPosition);
     }
-
 
     public void SetPosition(float x, float y)
     {
