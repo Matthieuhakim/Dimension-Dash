@@ -1,2 +1,57 @@
-# Auto detect text files and perform LF normalization
+# Normalize line endings for text files
 * text=auto
+
+# Code
+*.cs        text diff=csharp eol=lf
+*.shader    text eol=lf
+*.hlsl      text eol=lf
+*.cginc     text eol=lf
+*.asmdef    text eol=lf
+*.json      text eol=lf
+*.uss       text eol=lf
+*.uxml      text eol=lf
+
+# Unity YAML (Force Text serialization). Merged with Unity SmartMerge when the
+# "unityyamlmerge" driver is configured locally (see README), plain diff otherwise.
+*.unity             text eol=lf merge=unityyamlmerge
+*.prefab            text eol=lf merge=unityyamlmerge
+*.asset             text eol=lf merge=unityyamlmerge
+*.mat               text eol=lf merge=unityyamlmerge
+*.anim              text eol=lf merge=unityyamlmerge
+*.controller        text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.physicMaterial    text eol=lf merge=unityyamlmerge
+*.physicsMaterial2D text eol=lf merge=unityyamlmerge
+*.playable          text eol=lf merge=unityyamlmerge
+*.mask              text eol=lf merge=unityyamlmerge
+*.brush             text eol=lf merge=unityyamlmerge
+*.flare             text eol=lf merge=unityyamlmerge
+*.fontsettings      text eol=lf merge=unityyamlmerge
+*.guiskin           text eol=lf merge=unityyamlmerge
+*.giparams          text eol=lf merge=unityyamlmerge
+*.renderTexture     text eol=lf merge=unityyamlmerge
+*.spriteatlas       text eol=lf merge=unityyamlmerge
+*.terrainlayer      text eol=lf merge=unityyamlmerge
+*.mixer             text eol=lf merge=unityyamlmerge
+*.shadervariants   text eol=lf merge=unityyamlmerge
+*.preset            text eol=lf merge=unityyamlmerge
+*.meta              text eol=lf merge=unityyamlmerge
+
+# Binary assets. When the project gains real art/audio, install git-lfs and
+# change "binary" to "filter=lfs diff=lfs merge=lfs -text" for these.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.psd   binary
+*.tga   binary
+*.gif   binary
+*.ico   binary
+*.wav   binary
+*.mp3   binary
+*.ogg   binary
+*.ttf   binary
+*.otf   binary
+*.fbx   binary
+*.blend binary
+*.mp4   binary
+*.zip   binary

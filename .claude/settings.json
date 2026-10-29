@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./Library/**)",
+      "Read(./Temp/**)",
+      "Read(./obj/**)",
+      "Read(./WebGL Builds/**)"
+    ]
+  }
+}

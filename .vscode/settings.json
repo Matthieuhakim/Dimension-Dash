@@ -1,0 +1,19 @@
+{
+  "dotnet.defaultSolution": "Dimension-Dash.sln",
+  "files.exclude": {
+    "**/*.meta": true,
+    "**/.DS_Store": true,
+    "Library/": true,
+    "Temp/": true,
+    "Logs/": true,
+    "obj/": true,
+    "bin/": true,
+    "UserSettings/": true,
+    "WebGL Builds/": true
+  },
+  "search.exclude": {
+    "**/*.unity": true,
+    "**/*.prefab": true,
+    "**/*.asset": true
+  }
+}
