@@ -1,91 +1,59 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+// Persistent, self-bootstrapping singleton: only state that outlives a scene (attempts) and scene loading.
+// Levels don't need to contain it.
 public class GameManager : MonoBehaviour
 {
-
     public static GameManager Instance { get; private set; }
 
-    private PlayerController player;
+    public int Attempt { get; private set; }
 
-    private LevelCompleteUI levelCompleteUI;
+    private string currentLevel;
 
-    [HideInInspector]
-    public bool isPlaying = true;
-
-    private int attempt = 0;
-
-    public void Awake()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
     {
-        if (Instance == null)
+        if (Instance != null) return;
+        new GameObject(nameof(GameManager)).AddComponent<GameManager>();
+    }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(Instance);
-            SceneManager.sceneLoaded += OnLevelStart;
-
+            Destroy(gameObject);
+            return;
         }
-        else if (Instance != this)
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        // Mobile defaults to 30 fps; run at the display's refresh rate instead.
+        Application.targetFrameRate = Mathf.RoundToInt((float)Screen.currentResolution.refreshRateRatio.value);
+    }
+
+    // Called by each level on load. Attempts reset when a different level is started.
+    public void BeginAttempt(string levelName)
+    {
+        if (levelName != currentLevel)
         {
-            Destroy(gameObject); 
+            currentLevel = levelName;
+            Attempt = 0;
         }
+
+        Attempt++;
     }
 
-    private void OnLevelStart(Scene scene, LoadSceneMode mode)
-    {
-
-        player = GameObject.FindGameObjectWithTag(StringHelper.PLAYER_TAG).GetComponent<PlayerController>();
-        levelCompleteUI = GameObject.FindGameObjectWithTag(StringHelper.LEVEL_COMPLETE_UI_TAG).GetComponent<LevelCompleteUI>();
-
-        isPlaying = true;
-
-        IncreaseAttempt();
-    }
-
-    public void GameOver()
-    {
-        isPlaying = false;
-        player.Explode();
-        StartCoroutine(WaitAndRestartLevel());
-    }
-
-    public void FinishLevel()
-    {
-        isPlaying = false;
-        player.Explode();
-        levelCompleteUI.ActivateScreen();
-    }
-
-    private IEnumerator WaitAndRestartLevel()
-    {
-        yield return new WaitForSeconds(1);
-        RestartCurrentLevel();
-    }
-
-    public void IncreaseAttempt()
-    {
-        attempt += 1;
-    }
-
-    public int GetAttempt()
-    {
-        return attempt;
-    }
-
-    private void RestartCurrentLevel()
+    public void RestartLevel()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    public void ResetLevel()
+    // Restart from scratch, resetting the attempt counter.
+    public void ReplayLevel()
     {
-
-        attempt = 0;
-        RestartCurrentLevel();
-
-    }
-    void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnLevelStart;
+        currentLevel = null;
+        RestartLevel();
     }
 }
