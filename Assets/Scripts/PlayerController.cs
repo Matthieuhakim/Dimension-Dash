@@ -194,7 +194,7 @@ public class PlayerController : MonoBehaviour
         playerRb.angularVelocity = 0f;
 
         // Reset the Rigidbody's vertical velocity
-        playerRb.velocity = new Vector2(playerRb.velocity.x, 0f);
+        playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, 0f);
 
     }
 
