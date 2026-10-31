@@ -14,4 +14,12 @@ public class DimensionColor : DimensionListener
     {
         Tint = dimension == Dimension.Reality ? realityColor : shadowColor;
     }
+
+    // Preview the Reality colour in the editor, so edit mode looks like the level's start.
+    private void OnValidate()
+    {
+        if (Application.isPlaying) return;
+        FindTintTarget();
+        Tint = realityColor;
+    }
 }
