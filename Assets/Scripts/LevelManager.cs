@@ -24,6 +24,9 @@ public class LevelManager : MonoBehaviour
     private Dimension startDimension = Dimension.Reality;
     [SerializeField]
     private float restartDelay = 1f;
+    [Tooltip("Pause between the player bursting at the finish and the level complete screen.")]
+    [SerializeField]
+    private float completeScreenDelay = 0.8f;
     [Tooltip("The player dies when falling below this height.")]
     [SerializeField]
     private float killHeight = -10f;
@@ -69,8 +72,15 @@ public class LevelManager : MonoBehaviour
         if (!IsPlaying) return;
 
         CurrentState = State.Complete;
-        player.Stop();
+        player.Explode();
+        cameraRig.Shake(0.25f, 0.2f);
         SoundManager.Play(SoundManager.Sfx.Finish);
+        StartCoroutine(ShowCompleteScreenAfterDelay());
+    }
+
+    private IEnumerator ShowCompleteScreenAfterDelay()
+    {
+        yield return new WaitForSeconds(completeScreenDelay);
         levelCompleteUI.Show(GameManager.Instance.Attempt);
     }
 

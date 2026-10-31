@@ -228,12 +228,6 @@ public class PlayerController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Stop()
-    {
-        body.linearVelocity = Vector2.zero;
-        body.simulated = false;
-    }
-
     private static InputAction CreateButton(string name, params string[] bindings)
     {
         var action = new InputAction(name, InputActionType.Button);
