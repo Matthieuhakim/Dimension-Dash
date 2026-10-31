@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 07864b5ce79d84b708182598fe0eb193
+guid: c9583055b5e964137a3d6b24ea0f5124
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7648672005379351609
-    second: EclipseDisc_0
+      213: 7699978436774145253
+    second: Moon_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -141,13 +141,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: EclipseDisc_0
+      name: Moon_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 2
-        width: 252
-        height: 252
+        x: 12
+        y: 12
+        width: 104
+        height: 104
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,8 +156,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7cb93e3e5557ad590800000000000000
-      internalID: -7648672005379351609
+      spriteID: 5ec271e8791dbda60800000000000000
+      internalID: 7699978436774145253
       vertices: []
       indices: 
       edges: []
@@ -176,7 +176,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      EclipseDisc_0: -7648672005379351609
+      Moon_0: 7699978436774145253
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -16,8 +16,7 @@ obstacles solid or ghosted.
     ParticleSystem or Camera. Tint changes crossfade over `fadeTime` (visual only; the initial state is instant)
     - `DimensionColor` — recolours with the world (player, floor, sky, background layers, motes)
     - `DimensionObject` — exists in one dimension or both; ghosted (no collision, faded) when absent. Also used
-      without colliders for one-dimension scenery (clouds = Reality, stars = Shadow)
-    - `DimensionSlide` — moves to a per-dimension offset and tint (the eclipse disc sliding over the sun)
+      without colliders for one-dimension scenery (sun and clouds = Reality, moon and stars = Shadow)
     - `DimensionVolume` — blends a post-processing Volume's weight per dimension (night bloom)
     - `SwitchPulse` — plays a particle burst on each switch (on the Player)
   - `PlayerController` — velocity-driven run, fixed-arc jump (buffer + coyote), overlap-box ground check,
@@ -53,12 +52,12 @@ brightness); particles use the `Assets/Materials` particle materials. Active inp
 only — the legacy `Input` class throws at runtime.
 
 Look: Reality is a clear synth day (blue sky, clouds, haze, solid "day skin" blocks with a white top rim);
-Shadow is a neon night (stars, dark glass blocks with glowing edges, bloom). One sun sits in the same spot in
-both; switching to Shadow slides the eclipse disc over it and shows the corona. Colour says what exists —
+Shadow is a neon night (stars, dark glass blocks with glowing edges, bloom). The sun and moon share one spot
+(`Sun & Moon`): they crossfade on a switch while a shared glow shifts from warm to cool. Colour says what exists —
 cyan = Reality-only, magenta = Shadow-only, amber = both (red for spikes); the orb takes the world's colour.
 Day skins (`Floor (Day)`, `Blocks_Both (Day)`, `Blocks_Reality (Day)` under Runtime Layers) are TilemapSkins
 shown only in Reality; keep them empty in the scene like the other layers.
-Sorting orders: background −100…−65 (sky glow, stars, corona/sun/disc, clouds, mountains, skyline, haze),
+Sorting orders: background −100…−65 (sky glow, stars, sun/moon glow and discs, clouds, mountains, skyline, haze),
 motes −5, floor/blocks −2, day skins −1, finish −1, spikes 1, trail 9, orb 10–12, FX 20+.
 
 ## Building levels
