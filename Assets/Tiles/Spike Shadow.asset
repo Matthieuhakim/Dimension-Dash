@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Spike Shadow
   m_EditorClassIdentifier: Assembly-CSharp::DimensionTile
   m_Sprite: {fileID: 21300000, guid: 193824ac7eda142afb5842a3993e7355, type: 3}
-  m_Color: {r: 1, g: 0.47843137, b: 0.9019608, a: 1}
+  m_Color: {r: 1, g: 0.47843137, b: 0.9019608, a: 0.18}
   m_Transform:
     e00: 1
     e01: 0
@@ -37,3 +37,4 @@ MonoBehaviour:
   kind: 2
   presentIn: 1
   runtimeTile: {fileID: 11400000, guid: d791e643213704f2b8f6cdd64f895d06, type: 2}
+  connectedPreview: []

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d70db9c933df4db2be1d0cd47d682a6, type: 3}
   m_Name: Floor
   m_EditorClassIdentifier: Assembly-CSharp::DimensionTile
-  m_Sprite: {fileID: -1998084003, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
-  m_Color: {r: 1, g: 0.78431374, b: 0.34117648, a: 1}
+  m_Sprite: {fileID: -633282472, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0
@@ -37,3 +37,20 @@ MonoBehaviour:
   kind: 0
   presentIn: 2
   runtimeTile: {fileID: 11400000, guid: 97d1676453d2447a0b77efa9f5748030, type: 2}
+  connectedPreview:
+  - {fileID: -633282472, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 885395755, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -1706250861, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -242128628, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -1188784614, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 814557099, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 482512202, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -927191762, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 1112622337, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -648044357, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 681320880, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -333622432, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 588232303, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 809438317, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -543334280, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -1454875353, guid: d04419a71e16b497983b93e5ab60db13, type: 3}

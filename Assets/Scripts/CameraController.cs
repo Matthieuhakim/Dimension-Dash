@@ -65,6 +65,15 @@ public class CameraController : MonoBehaviour
         transform.position = new Vector3(TargetCameraX(), startY, transform.position.z);
     }
 
+    // Preview the starting framing in the editor (same maths as Awake, at the Game view's aspect).
+    private void OnValidate()
+    {
+        if (Application.isPlaying || target == null) return;
+        cam = GetComponent<Camera>();
+        cam.orthographicSize = Mathf.Max(designViewHeight * 0.5f, minViewWidth * 0.5f / cam.aspect);
+        transform.position = new Vector3(TargetCameraX(), target.position.y + verticalOffset, transform.position.z);
+    }
+
     private void LateUpdate()
     {
         if (Screen.width != screenWidth || Screen.height != screenHeight)

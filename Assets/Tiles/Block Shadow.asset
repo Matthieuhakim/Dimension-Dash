@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Block Shadow
   m_EditorClassIdentifier: Assembly-CSharp::DimensionTile
   m_Sprite: {fileID: 1941870434, guid: 458906d0ec494421cb89cb6437508742, type: 3}
-  m_Color: {r: 1, g: 0.16862746, b: 0.8392157, a: 1}
+  m_Color: {r: 1, g: 0.16862746, b: 0.8392157, a: 0.18}
   m_Transform:
     e00: 1
     e01: 0
@@ -37,3 +37,20 @@ MonoBehaviour:
   kind: 1
   presentIn: 1
   runtimeTile: {fileID: 11400000, guid: 1ceb3f8a7cf57404892245829ecfb73f, type: 2}
+  connectedPreview:
+  - {fileID: 1941870434, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -1284779990, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: 1412554969, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -1433700235, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -1275806171, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: 1662112100, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -1783410769, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -345922527, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -792079673, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: 847424463, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -1002462045, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: 2023383193, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -829706798, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: -2102641883, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: 1915364590, guid: 458906d0ec494421cb89cb6437508742, type: 3}
+  - {fileID: 1043023082, guid: 458906d0ec494421cb89cb6437508742, type: 3}

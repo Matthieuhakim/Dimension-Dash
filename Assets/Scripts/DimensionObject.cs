@@ -67,11 +67,13 @@ public class DimensionObject : DimensionListener
         Tint = color;
     }
 
-    // Preview the presence colour in the editor so dimension layers are visible while building levels.
+    // Preview the level's start (Reality) in the editor: absent objects show ghosted.
     private void OnValidate()
     {
         if (Application.isPlaying) return;
         FindTintTarget();
-        Tint = PresenceColor;
+        Color color = PresenceColor;
+        color.a = IsPresentIn(Dimension.Reality) ? 1f : ghostAlpha;
+        Tint = color;
     }
 }

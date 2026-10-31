@@ -23,9 +23,11 @@ obstacles solid or ghosted.
     contact-normal deaths; input via serialized `InputAction`s + touch halves. Tells `PlayerVisual` and
     `SoundManager` about jumps/landings
   - `PlayerVisual` — the orb's look: squash & stretch spring, ring pulse, blinking eyes, trail colour
-  - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow, `Shake`
+  - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow, `Shake`;
+    previews the starting framing in the editor
   - `ParallaxLayer` — background layer following the camera at a scroll factor, wrapping a Tiled sprite
-  - `DimensionTile` (Tile) — authoring tile: kind (Floor/Block/Spike) + `DimensionPresence` + runtime tile
+  - `DimensionTile` (Tile) — authoring tile: kind (Floor/Block/Spike) + `DimensionPresence` + runtime tile;
+    optional 16-sprite connected preview (same neighbour masks as `ConnectedTile`)
   - `ConnectedTile` (TileBase) — runtime tile picking 1 of 16 sprites from its same-tilemap neighbours
     (N=1 E=2 S=4 W=8), so slabs glow only on exposed edges; collider type Grid
   - `LevelTilemap` — on load, copies the authoring tilemap's tiles onto the runtime layers, then hides it
@@ -65,8 +67,9 @@ motes −5, floor/blocks −2, day skins −1, finish −1, spikes 1, trail 9, o
 A level is a `Grid` (cell size 1) with:
 
 - `Level` — the **only tilemap you paint on** (`LevelTilemap` component). Paint any tile from the `Level`
-  palette here; mixed sections (any kind, any dimension) can be selected and moved together. Tiles show their
-  dimension's colour as a preview.
+  palette here; mixed sections (any kind, any dimension) can be selected and moved together. Tiles preview the
+  level's start (Reality, daytime): blocks and floor join into slabs with the day textures, and Shadow-only tiles
+  show ghosted as in play.
 - `Runtime Layers` — `Floor` (DimensionColor), `Blocks_Both/Reality/Shadow` (Ground layer, DimensionObject),
   `Spikes_Both/Reality/Shadow` (`Obstacle` tag, DimensionObject). **Keep them empty**: `LevelTilemap` fills them
   on load. Each has a static Rigidbody2D and a TilemapCollider2D merged into a CompositeCollider2D (geometry

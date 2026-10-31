@@ -37,3 +37,4 @@ MonoBehaviour:
   kind: 2
   presentIn: 2
   runtimeTile: {fileID: 11400000, guid: d791e643213704f2b8f6cdd64f895d06, type: 2}
+  connectedPreview: []
