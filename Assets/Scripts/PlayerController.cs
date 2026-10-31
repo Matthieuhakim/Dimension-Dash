@@ -4,7 +4,7 @@ using UnityEngine.InputSystem.Controls;
 using UnityEngine.Serialization;
 
 // Auto-runner: constant forward speed, fixed-arc jump, dimension switching, collision deaths.
-// Physics rotation is frozen; only the Visual child spins.
+// Physics rotation is frozen; the orb's look (squash & stretch) lives in PlayerVisual.
 [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class PlayerController : MonoBehaviour
 {
@@ -33,14 +33,9 @@ public class PlayerController : MonoBehaviour
 
     [Header("Visuals")]
     [SerializeField]
-    private Transform visual;
+    private PlayerVisual visual;
     [SerializeField]
     private SpriteRenderer spriteRenderer;
-    [Tooltip("Rotation of the visual over one full jump.")]
-    [SerializeField]
-    private float airSpinDegrees = -180f;
-    [SerializeField]
-    private float landingSnapSpeed = 720f;
     [SerializeField]
     private ParticleSystem deathParticles;
 
@@ -58,7 +53,6 @@ public class PlayerController : MonoBehaviour
     private bool jumpHeld;
     private float lastGroundedTime = float.NegativeInfinity;
     private float lastJumpPressTime = float.NegativeInfinity;
-    private float airSpinSpeed;
 
     private static LevelManager Level => LevelManager.Instance;
 
@@ -71,9 +65,6 @@ public class PlayerController : MonoBehaviour
     {
         body = GetComponent<Rigidbody2D>();
         box = GetComponent<BoxCollider2D>();
-
-        float airTime = 2f * jumpVelocity / (Mathf.Abs(Physics2D.gravity.y) * body.gravityScale);
-        airSpinSpeed = airSpinDegrees / airTime;
 
         // Jump held through a respawn (the key is already down when the action enables) still counts.
         jumpAction.wantsInitialStateCheck = true;
@@ -107,8 +98,6 @@ public class PlayerController : MonoBehaviour
         {
             Level.SwitchDimension();
         }
-
-        UpdateVisualRotation();
     }
 
     private void FixedUpdate()
@@ -124,7 +113,13 @@ public class PlayerController : MonoBehaviour
         Vector2 velocity = body.linearVelocity;
         velocity.x = runSpeed;
 
+        bool wasGrounded = isGrounded;
         isGrounded = velocity.y <= 0.01f && CheckGround();
+        if (isGrounded && !wasGrounded)
+        {
+            visual.Landed();
+            SoundManager.Play(SoundManager.Sfx.Land);
+        }
         if (isGrounded)
         {
             lastGroundedTime = Time.time;
@@ -137,7 +132,8 @@ public class PlayerController : MonoBehaviour
         {
             velocity.y = jumpVelocity;
             isGrounded = false;
-            SnapVisualRotation();
+            visual.Jumped();
+            SoundManager.Play(SoundManager.Sfx.Jump);
             lastGroundedTime = float.NegativeInfinity;
             lastJumpPressTime = float.NegativeInfinity;
         }
@@ -180,28 +176,6 @@ public class PlayerController : MonoBehaviour
                 jumpHeld |= touch.press.isPressed;
             }
         }
-    }
-
-    private void UpdateVisualRotation()
-    {
-        float angle = visual.localEulerAngles.z;
-        if (isGrounded)
-        {
-            float target = Mathf.Round(angle / 90f) * 90f;
-            angle = Mathf.MoveTowardsAngle(angle, target, landingSnapSpeed * Time.deltaTime);
-        }
-        else
-        {
-            angle += airSpinSpeed * Time.deltaTime;
-        }
-        visual.localRotation = Quaternion.Euler(0f, 0f, angle);
-    }
-
-    // Every jump starts from a flat face, so the spin always lands flat even on instant re-jumps.
-    private void SnapVisualRotation()
-    {
-        float angle = Mathf.Round(visual.localEulerAngles.z / 90f) * 90f;
-        visual.localRotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     private void OnCollisionEnter2D(Collision2D collision) => CheckDeadlyCollision(collision);

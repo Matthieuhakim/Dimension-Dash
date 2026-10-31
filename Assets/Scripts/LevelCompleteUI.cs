@@ -15,7 +15,11 @@ public class LevelCompleteUI : MonoBehaviour
     private void Awake()
     {
         panel.SetActive(false);
-        restartButton.onClick.AddListener(() => GameManager.Instance.ReplayLevel());
+        restartButton.onClick.AddListener(() =>
+        {
+            SoundManager.Play(SoundManager.Sfx.Click);
+            GameManager.Instance.ReplayLevel();
+        });
     }
 
     public void Show(int attempts)

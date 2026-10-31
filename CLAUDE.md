@@ -12,26 +12,47 @@ obstacles solid or ghosted.
   - `LevelManager` — per-scene singleton (`DefaultExecutionOrder(-100)`): play state (Playing/Dead/Complete),
     current `Dimension`, static `DimensionChanged` event, kill height, death/finish flow
   - `Dimension` — `Dimension { Reality, Shadow }` (world state), `DimensionPresence { Reality, Shadow, Both }`
-  - `DimensionListener` (abstract) — subscribes to `DimensionChanged`; tints a SpriteRenderer, Tilemap or Camera
-    - `DimensionColor` — recolours with the world (player, floor, camera background)
-    - `DimensionObject` — exists in one dimension or both; ghosted (no collision, faded) when absent
+  - `DimensionListener` (abstract) — subscribes to `DimensionChanged`; tints a SpriteRenderer, Tilemap,
+    ParticleSystem or Camera. Tint changes crossfade over `fadeTime` (visual only; the initial state is instant)
+    - `DimensionColor` — recolours with the world (player, floor, sky, background layers, motes)
+    - `DimensionObject` — exists in one dimension or both; ghosted (no collision, faded) when absent. Also used
+      without colliders for one-dimension scenery (sun = Reality, moon/stars = Shadow)
+    - `SwitchPulse` — plays a particle burst on each switch (on the Player)
   - `PlayerController` — velocity-driven run, fixed-arc jump (buffer + coyote), overlap-box ground check,
-    contact-normal deaths, visual-only spin; input via serialized `InputAction`s + touch halves
-  - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow
+    contact-normal deaths; input via serialized `InputAction`s + touch halves. Tells `PlayerVisual` and
+    `SoundManager` about jumps/landings
+  - `PlayerVisual` — the orb's look: squash & stretch spring, ring pulse, blinking eyes, trail colour
+  - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow, `Shake`
+  - `ParallaxLayer` — background layer following the camera at a scroll factor, wrapping a Tiled sprite
   - `DimensionTile` (Tile) — authoring tile: kind (Floor/Block/Spike) + `DimensionPresence` + runtime tile
+  - `ConnectedTile` (TileBase) — runtime tile picking 1 of 16 sprites from its same-tilemap neighbours
+    (N=1 E=2 S=4 W=8), so slabs glow only on exposed edges; collider type Grid
   - `LevelTilemap` — on load, copies the authoring tilemap's tiles onto the runtime layers, then hides it
-  - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen
+  - `SoundManager` — per-scene sound effects (`SoundManager.Play(Sfx)`, switch sounds from `DimensionChanged`)
+    and a music source that survives restarts (`DontDestroyOnLoad`); on the LevelManager object
+  - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen; `HudUI` — attempt
+    number + progress bar
   - `StringHelper` — tag/layer name constants; keep in sync with Tags & Layers in ProjectSettings
 - `Assets/Scenes/TestScene.unity` — the only scene in the build (contains level 1)
 - `Assets/Tiles/` — the 7 `DimensionTile`s (Floor, Block/Spike × Both/Reality/Shadow), the `Level` palette,
-  and `Runtime/` (the white Block/Spike tiles the layers use; not for painting)
-- `Assets/Prefabs/` — Player, Level (Finish Line), FX (death particles), UI
-- `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings
+  and `Runtime/` (the white Block/Floor `ConnectedTile`s and Spike tile the layers use; not for painting)
+- `Assets/Prefabs/` — Player (orb), Level (Finish Line portal), FX (death particles), UI
+- `Assets/Sprites/` — the "Neon Rift" art, generated procedurally (plain PNGs, white/grey so the dimension
+  tints colour them; sun and moon have baked colour). `Block`/`Floor` are 4×4 sheets sliced `<Name>_<mask>`
+- `Assets/Audio/` — synthesised sound effects and the music loop
+- `Assets/Materials/` — URP Particles/Unlit materials (glow dot, ring, trail), physics material
+- `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings, `NeonPostProcess` (bloom + vignette,
+  used by the scene's global Volume; the camera has post-processing on)
 - `Assets/TextMesh Pro/` — imported TMP essentials; do not edit
 
 Sprites use URP's `Sprite-Lit-Default` material (no 2D lights in the scene, so they render at full
-brightness); particles use `ParticlesUnlit`. Active input handling is Input System only — the legacy
-`Input` class throws at runtime.
+brightness); particles use the `Assets/Materials` particle materials. Active input handling is Input System
+only — the legacy `Input` class throws at runtime.
+
+Look: colour says what exists — cyan = Reality-only, magenta = Shadow-only, amber = both (red for spikes);
+the orb takes the current world's colour. Bloom threshold is 0.8, so only bright edges/sun/orb glow.
+Sorting orders: background −100…−70 (sky glow, stars, sun/moon, mountains, skyline), motes −5, finish −1,
+floor/blocks 0, spikes 1, trail 9, orb 10–12, FX 20+.
 
 ## Building levels
 
@@ -52,6 +73,9 @@ Rules:
 - Jump height is ~2.45 above the surface: step-ups of 2 cells max. A row the player runs under needs
   2 free cells above the surface, 3 if a hanging spike is there.
 - Rotate a hanging spike 180° with `[` / `]` on the brush; the rotation is copied to the runtime layer.
+- Visuals never define collision: blocks use Grid colliders, and the spike's collider is the custom physics
+  outline on `Sprites/Spike.png` — an equilateral triangle `(-0.5,-0.5) (0,0.3660254) (0.5,-0.5)`. Keep it
+  if the spike art changes. The Finish Line trigger is a fixed 1×10 box (`autoTiling` off).
 - To add a new tile type, create a `DimensionTile` asset (kind, presence, runtime tile) and add it to the
   palette; a new kind also needs a runtime layer entry on `LevelTilemap`.
 - A new level scene needs a `LevelManager` (player + UI references), the Player and Canvas prefabs, and a

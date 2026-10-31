@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d70db9c933df4db2be1d0cd47d682a6, type: 3}
   m_Name: Floor
   m_EditorClassIdentifier: Assembly-CSharp::DimensionTile
-  m_Sprite: {fileID: 21300000, guid: 2dc5c0bb5fe224a6d9d0b9fec9b6dbf8, type: 3}
-  m_Color: {r: 0, g: 0.8, b: 0.29803923, a: 1}
+  m_Sprite: {fileID: -1998084003, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  m_Color: {r: 1, g: 0.78431374, b: 0.34117648, a: 1}
   m_Transform:
     e00: 1
     e01: 0
@@ -36,4 +36,4 @@ MonoBehaviour:
   m_ColliderType: 0
   kind: 0
   presentIn: 2
-  runtimeTile: {fileID: 11400000, guid: 1ceb3f8a7cf57404892245829ecfb73f, type: 2}
+  runtimeTile: {fileID: 11400000, guid: 97d1676453d2447a0b77efa9f5748030, type: 2}

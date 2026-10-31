@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d70db9c933df4db2be1d0cd47d682a6, type: 3}
   m_Name: Spike Reality
   m_EditorClassIdentifier: Assembly-CSharp::DimensionTile
-  m_Sprite: {fileID: 21300000, guid: ecbd89802732946e6816a36ed26fb4ca, type: 3}
-  m_Color: {r: 1, g: 0.058691263, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 193824ac7eda142afb5842a3993e7355, type: 3}
+  m_Color: {r: 0.49803922, g: 0.9764706, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0

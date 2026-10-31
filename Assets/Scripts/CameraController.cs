@@ -48,6 +48,11 @@ public class CameraController : MonoBehaviour
     private float focusY;
     private float startY;
     private float yVelocity;
+    // Camera height before the shake offset.
+    private float followY;
+    private float shakeEndTime;
+    private float shakeDuration;
+    private float shakeStrength;
 
     private void Awake()
     {
@@ -56,6 +61,7 @@ public class CameraController : MonoBehaviour
 
         focusY = target.position.y;
         startY = focusY + verticalOffset;
+        followY = startY;
         transform.position = new Vector3(TargetCameraX(), startY, transform.position.z);
     }
 
@@ -73,9 +79,24 @@ public class CameraController : MonoBehaviour
         float desiredY = focusY + verticalOffset;
         if (clampToStartHeight) desiredY = Mathf.Max(desiredY, startY);
 
-        float smoothTime = desiredY < transform.position.y ? fallSmoothTime : riseSmoothTime;
-        float y = Mathf.SmoothDamp(transform.position.y, desiredY, ref yVelocity, smoothTime);
-        transform.position = new Vector3(TargetCameraX(), y, transform.position.z);
+        float smoothTime = desiredY < followY ? fallSmoothTime : riseSmoothTime;
+        followY = Mathf.SmoothDamp(followY, desiredY, ref yVelocity, smoothTime);
+        transform.position = new Vector3(TargetCameraX(), followY, transform.position.z) + (Vector3)ShakeOffset();
+    }
+
+    // Visual only: the offset is re-applied each frame on top of the follow position, never accumulated.
+    public void Shake(float duration, float strength)
+    {
+        shakeDuration = duration;
+        shakeStrength = strength;
+        shakeEndTime = Time.time + duration;
+    }
+
+    private Vector2 ShakeOffset()
+    {
+        float remaining = shakeEndTime - Time.time;
+        if (remaining <= 0f) return Vector2.zero;
+        return Random.insideUnitCircle * (shakeStrength * remaining / shakeDuration);
     }
 
     private void FitToScreen()

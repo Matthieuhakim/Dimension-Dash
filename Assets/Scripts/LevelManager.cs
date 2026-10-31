@@ -17,6 +17,8 @@ public class LevelManager : MonoBehaviour
     private PlayerController player;
     [SerializeField]
     private LevelCompleteUI levelCompleteUI;
+    [SerializeField]
+    private CameraController cameraRig;
 
     [SerializeField]
     private Dimension startDimension = Dimension.Reality;
@@ -57,6 +59,8 @@ public class LevelManager : MonoBehaviour
 
         CurrentState = State.Dead;
         player.Explode();
+        cameraRig.Shake(0.35f, 0.35f);
+        SoundManager.Play(SoundManager.Sfx.Death);
         StartCoroutine(RestartAfterDelay());
     }
 
@@ -66,6 +70,7 @@ public class LevelManager : MonoBehaviour
 
         CurrentState = State.Complete;
         player.Stop();
+        SoundManager.Play(SoundManager.Sfx.Finish);
         levelCompleteUI.Show(GameManager.Instance.Attempt);
     }
 

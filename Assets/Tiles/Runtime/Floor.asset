@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd22066413400467e861b3388f8b1a84, type: 3}
+  m_Name: Floor
+  m_EditorClassIdentifier: Assembly-CSharp::ConnectedTile
+  sprites:
+  - {fileID: 484401556, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 1755294787, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 1607140171, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 476421398, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: -1998084003, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: -1537965864, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 49277689, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 127077359, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: -1891821258, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 1548202930, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 1934181450, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 82028428, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: -1271396081, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 686939311, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: -1894270767, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  - {fileID: 731860638, guid: 9bc42f440cc7945b2a64c7cece829b6b, type: 3}
+  colliderType: 2
