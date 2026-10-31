@@ -16,7 +16,9 @@ obstacles solid or ghosted.
     ParticleSystem or Camera. Tint changes crossfade over `fadeTime` (visual only; the initial state is instant)
     - `DimensionColor` — recolours with the world (player, floor, sky, background layers, motes)
     - `DimensionObject` — exists in one dimension or both; ghosted (no collision, faded) when absent. Also used
-      without colliders for one-dimension scenery (sun = Reality, moon/stars = Shadow)
+      without colliders for one-dimension scenery (clouds = Reality, stars = Shadow)
+    - `DimensionSlide` — moves to a per-dimension offset and tint (the eclipse disc sliding over the sun)
+    - `DimensionVolume` — blends a post-processing Volume's weight per dimension (night bloom)
     - `SwitchPulse` — plays a particle burst on each switch (on the Player)
   - `PlayerController` — velocity-driven run, fixed-arc jump (buffer + coyote), overlap-box ground check,
     contact-normal deaths; input via serialized `InputAction`s + touch halves. Tells `PlayerVisual` and
@@ -28,6 +30,7 @@ obstacles solid or ghosted.
   - `ConnectedTile` (TileBase) — runtime tile picking 1 of 16 sprites from its same-tilemap neighbours
     (N=1 E=2 S=4 W=8), so slabs glow only on exposed edges; collider type Grid
   - `LevelTilemap` — on load, copies the authoring tilemap's tiles onto the runtime layers, then hides it
+  - `TilemapSkin` — visual-only copy of a runtime layer with another tile, filled on load (the daytime skins)
   - `SoundManager` — per-scene sound effects (`SoundManager.Play(Sfx)`, switch sounds from `DimensionChanged`)
     and a music source that survives restarts (`DontDestroyOnLoad`); on the LevelManager object
   - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen; `HudUI` — attempt
@@ -41,18 +44,22 @@ obstacles solid or ghosted.
   tints colour them; sun and moon have baked colour). `Block`/`Floor` are 4×4 sheets sliced `<Name>_<mask>`
 - `Assets/Audio/` — synthesised sound effects and the music loop
 - `Assets/Materials/` — URP Particles/Unlit materials (glow dot, ring, trail), physics material
-- `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings, `NeonPostProcess` (bloom + vignette,
-  used by the scene's global Volume; the camera has post-processing on)
+- `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings, `DayPostProcess` (base Volume: soft
+  bloom, light vignette) and `NightPostProcess` (priority-1 Volume, strong bloom; weight 0 in Reality, 1 in Shadow)
 - `Assets/TextMesh Pro/` — imported TMP essentials; do not edit
 
 Sprites use URP's `Sprite-Lit-Default` material (no 2D lights in the scene, so they render at full
 brightness); particles use the `Assets/Materials` particle materials. Active input handling is Input System
 only — the legacy `Input` class throws at runtime.
 
-Look: colour says what exists — cyan = Reality-only, magenta = Shadow-only, amber = both (red for spikes);
-the orb takes the current world's colour. Bloom threshold is 0.8, so only bright edges/sun/orb glow.
-Sorting orders: background −100…−70 (sky glow, stars, sun/moon, mountains, skyline), motes −5, finish −1,
-floor/blocks 0, spikes 1, trail 9, orb 10–12, FX 20+.
+Look: Reality is a clear synth day (blue sky, clouds, haze, solid "day skin" blocks with a white top rim);
+Shadow is a neon night (stars, dark glass blocks with glowing edges, bloom). One sun sits in the same spot in
+both; switching to Shadow slides the eclipse disc over it and shows the corona. Colour says what exists —
+cyan = Reality-only, magenta = Shadow-only, amber = both (red for spikes); the orb takes the world's colour.
+Day skins (`Floor (Day)`, `Blocks_Both (Day)`, `Blocks_Reality (Day)` under Runtime Layers) are TilemapSkins
+shown only in Reality; keep them empty in the scene like the other layers.
+Sorting orders: background −100…−65 (sky glow, stars, corona/sun/disc, clouds, mountains, skyline, haze),
+motes −5, floor/blocks −2, day skins −1, finish −1, spikes 1, trail 9, orb 10–12, FX 20+.
 
 ## Building levels
 

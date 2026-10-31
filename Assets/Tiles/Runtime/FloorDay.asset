@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd22066413400467e861b3388f8b1a84, type: 3}
+  m_Name: FloorDay
+  m_EditorClassIdentifier: Assembly-CSharp::ConnectedTile
+  sprites:
+  - {fileID: -633282472, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 885395755, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -1706250861, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -242128628, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -1188784614, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 814557099, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 482512202, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -927191762, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 1112622337, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -648044357, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 681320880, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -333622432, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 588232303, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: 809438317, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -543334280, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  - {fileID: -1454875353, guid: d04419a71e16b497983b93e5ab60db13, type: 3}
+  colliderType: 0

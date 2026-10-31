@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd22066413400467e861b3388f8b1a84, type: 3}
+  m_Name: BlockDayReality
+  m_EditorClassIdentifier: Assembly-CSharp::ConnectedTile
+  sprites:
+  - {fileID: -1063721161, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: 279595540, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: 401672201, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -588958141, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -325930269, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -1006774894, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -1739787031, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: 771127846, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -249305452, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: 1300998730, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -999281860, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -1441817538, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -948399008, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: 1556589259, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -1718492298, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  - {fileID: -1985006061, guid: 689db6c16b7334987a3b41765a1b4e72, type: 3}
+  colliderType: 0

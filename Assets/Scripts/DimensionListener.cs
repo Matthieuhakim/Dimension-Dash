@@ -92,6 +92,9 @@ public abstract class DimensionListener : MonoBehaviour
         CurrentTint = Color.LerpUnclamped(fadeFrom, fadeTo, t);
     }
 
+    // True while the initial dimension is being applied on enable: subclasses should snap, not animate.
+    protected bool IsApplyingInitialState => snapNextTint;
+
     protected abstract void OnDimensionChanged(Dimension dimension);
 
     protected void FindTintTarget()
