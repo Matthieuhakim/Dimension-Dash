@@ -11,20 +11,24 @@ public class LevelCompleteUI : MonoBehaviour
     private TMP_Text attemptText;
     [SerializeField]
     private Button restartButton;
+    [Tooltip("Hidden when this is the last level.")]
+    [SerializeField]
+    private Button nextButton;
+    [SerializeField]
+    private Button menuButton;
 
     private void Awake()
     {
         panel.SetActive(false);
-        restartButton.onClick.AddListener(() =>
-        {
-            SoundManager.Play(SoundManager.Sfx.Click);
-            GameManager.Instance.ReplayLevel();
-        });
+        restartButton.OnClick(() => GameManager.Instance.ReplayLevel());
+        nextButton.OnClick(() => GameManager.Instance.LoadNextLevel());
+        menuButton.OnClick(() => GameManager.Instance.LoadMenu());
     }
 
     public void Show(int attempts)
     {
         attemptText.text = $"Total attempts: {attempts}";
+        nextButton.gameObject.SetActive(GameManager.HasNextLevel);
         panel.SetActive(true);
     }
 }

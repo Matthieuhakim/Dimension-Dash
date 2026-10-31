@@ -3,6 +3,7 @@ using UnityEngine;
 
 // Per-scene sound effects plus music that keeps playing across level restarts.
 // Gameplay code calls SoundManager.Play(...); dimension switches are picked up from LevelManager.DimensionChanged.
+// Respects the SFX / Music settings in SaveData; call ApplySettings() after changing them.
 public class SoundManager : MonoBehaviour
 {
     public enum Sfx { Jump, Land, SwitchToReality, SwitchToShadow, Death, Finish, Click }
@@ -59,6 +60,12 @@ public class SoundManager : MonoBehaviour
         if (instance != null) instance.PlayEffect(id);
     }
 
+    public static void ApplySettings()
+    {
+        // Muted rather than stopped, so the track keeps its place.
+        if (musicSource != null) musicSource.mute = !SaveData.MusicOn;
+    }
+
     private void OnDimensionChanged(Dimension dimension)
     {
         PlayEffect(dimension == Dimension.Reality ? Sfx.SwitchToReality : Sfx.SwitchToShadow);
@@ -66,6 +73,8 @@ public class SoundManager : MonoBehaviour
 
     private void PlayEffect(Sfx id)
     {
+        if (!SaveData.SfxOn) return;
+
         foreach (Effect effect in effects)
         {
             if (effect.id != id || effect.clip == null) continue;
@@ -93,6 +102,7 @@ public class SoundManager : MonoBehaviour
         }
 
         musicSource.volume = musicVolume;
+        ApplySettings();
         if (musicSource.clip != music || !musicSource.isPlaying)
         {
             musicSource.clip = music;

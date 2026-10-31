@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.Serialization;
@@ -55,6 +57,8 @@ public class PlayerController : MonoBehaviour
     private float lastJumpPressTime = float.NegativeInfinity;
 
     private static LevelManager Level => LevelManager.Instance;
+
+    private static readonly List<RaycastResult> uiHits = new List<RaycastResult>();
 
     private void Reset()
     {
@@ -152,6 +156,7 @@ public class PlayerController : MonoBehaviour
 
     // Left half: switch dimension (on press). Right half: jump (held).
     // A touch keeps the role of the half it started in, even if it slides across.
+    // Touches that start on UI (the pause button) are left to the UI.
     private static void ReadTouches(out bool jumpPressed, out bool jumpHeld, out bool switchPressed)
     {
         jumpPressed = jumpHeld = switchPressed = false;
@@ -165,7 +170,10 @@ public class PlayerController : MonoBehaviour
             bool pressedThisFrame = touch.press.wasPressedThisFrame;
             if (!pressedThisFrame && !touch.press.isPressed) continue;
 
-            bool leftHalf = touch.startPosition.ReadValue().x < halfWidth;
+            Vector2 start = touch.startPosition.ReadValue();
+            if (IsOverUI(start)) continue;
+
+            bool leftHalf = start.x < halfWidth;
             if (leftHalf)
             {
                 switchPressed |= pressedThisFrame;
@@ -176,6 +184,15 @@ public class PlayerController : MonoBehaviour
                 jumpHeld |= touch.press.isPressed;
             }
         }
+    }
+
+    private static bool IsOverUI(Vector2 screenPosition)
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null) return false;
+
+        eventSystem.RaycastAll(new PointerEventData(eventSystem) { position = screenPosition }, uiHits);
+        return uiHits.Count > 0;
     }
 
     private void OnCollisionEnter2D(Collision2D collision) => CheckDeadlyCollision(collision);

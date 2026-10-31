@@ -8,9 +8,13 @@ obstacles solid or ghosted.
 
 - `Assets/Scripts/` — all game code (flat, no asmdef, compiles into `Assembly-CSharp`)
   - `GameManager` — self-bootstrapping persistent singleton (`RuntimeInitializeOnLoadMethod`, not placed in
-    scenes): attempt counter, `RestartLevel` / `ReplayLevel`, target frame rate
-  - `LevelManager` — per-scene singleton (`DefaultExecutionOrder(-100)`): play state (Playing/Dead/Complete),
-    current `Dimension`, static `DimensionChanged` event, kill height, death/finish flow
+    scenes): session attempt counter, scene loading (`LoadMenu` / `LoadLevel` / `LoadNextLevel` / `RestartLevel` /
+    `ReplayLevel`, all reset `Time.timeScale`), level numbering, target frame rate
+  - `SaveData` — static PlayerPrefs wrapper: SFX / Music / Haptics settings, unlocked level, per-level best
+    progress, lifetime attempts and completed flag (keyed by scene name); `ResetProgress` keeps settings
+  - `LevelManager` — per-scene singleton (`DefaultExecutionOrder(-100)`): play state (Playing/Paused/Dead/Complete;
+    pause = `timeScale` 0), current `Dimension`, static `DimensionChanged` event, kill height, progress (player x
+    from start to the finish line), death/finish flow (saves records, unlocks the next level, vibrates)
   - `Dimension` — `Dimension { Reality, Shadow }` (world state), `DimensionPresence { Reality, Shadow, Both }`
   - `DimensionListener` (abstract) — subscribes to `DimensionChanged`; tints a SpriteRenderer, Tilemap,
     ParticleSystem or Camera. Tint changes crossfade over `fadeTime` (visual only; the initial state is instant)
@@ -33,20 +37,32 @@ obstacles solid or ghosted.
   - `LevelTilemap` — on load, copies the authoring tilemap's tiles onto the runtime layers, then hides it
   - `TilemapSkin` — visual-only copy of a runtime layer with another tile, filled on load (the daytime skins)
   - `SoundManager` — per-scene sound effects (`SoundManager.Play(Sfx)`, switch sounds from `DimensionChanged`)
-    and a music source that survives restarts (`DontDestroyOnLoad`); on the LevelManager object
-  - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen; `HudUI` — attempt
-    number + progress bar
+    and a music source that survives scene loads (`DontDestroyOnLoad`); respects the SaveData audio settings
+    (`ApplySettings()` after changing them). On the LevelManager object, and its own object in MainMenu
+  - `SafeArea` — fits a RectTransform to `Screen.safeArea`; `LevelCompleteUI` — end screen (Play again / Next /
+    Menu); `HudUI` — attempt number, progress bar, "new best" label
+  - `PauseMenu` — pause button (top right) and menu (Resume with a 3-2-1 countdown at 0.6 s per number, Menu, SFX/Music);
+    Escape / gamepad Start / Android Back and the app losing focus also pause
+  - `MainMenu` — menu scene: Home / Level Select / Settings panels (Reset Progress with a confirm dialog); builds `levelSlots` `LevelCard`s (slots past the
+    last built level show "coming soon"); drifts the camera so the background scrolls
+  - `SettingToggle` — button flipping one SaveData setting; `UiButtons.OnClick` — click sound + clears UI
+    selection (gamepad South is both Jump and Submit). Wire buttons through it
   - `StringHelper` — tag/layer name constants; keep in sync with Tags & Layers in ProjectSettings
-- `Assets/Scenes/TestScene.unity` — the only scene in the build (contains level 1)
+- `Assets/Scenes/` — `MainMenu` (build index 0) and `Level 1` (index 1). Build index N ≥ 1 is level N; the next
+  level is index N+1, and the scene name is the save key (renaming a level scene resets its records)
 - `Assets/Tiles/` — the 7 `DimensionTile`s (Floor, Block/Spike × Both/Reality/Shadow), the `Level` palette,
   and `Runtime/` (the white Block/Floor `ConnectedTile`s and Spike tile the layers use; not for painting)
-- `Assets/Prefabs/` — Player (orb), Level (Finish Line portal), FX (death particles), UI
+- `Assets/Prefabs/` — Player (orb), Level (Finish Line portal, Background sky/parallax shared by menu and levels),
+  FX (death particles), UI
 - `Assets/Sprites/` — the "Neon Rift" art, generated procedurally (plain PNGs, white/grey so the dimension
   tints colour them; sun and moon have baked colour). `Block`/`Floor` are 4×4 sheets sliced `<Name>_<mask>`
 - `Assets/Audio/` — synthesised sound effects and the music loop
 - `Assets/Materials/` — URP Particles/Unlit materials (glow dot, ring, trail), physics material
 - `Assets/Settings/` — URP pipeline asset, 2D renderer, URP global settings, `DayPostProcess` (base Volume: soft
   bloom, light vignette) and `NightPostProcess` (priority-1 Volume, strong bloom; weight 0 in Reality, 1 in Shadow)
+- `Assets/Fonts/` — Bangers (dynamic SDF atlas, 2048², padding 18 so thick outlines stay smooth) and two
+  materials: `Display` (titles, headings, button labels: thick indigo outline + soft drop shadow) and `HUD`
+  (small text: same look, relatively thicker outline). Colour accents go in the text colour, not the material
 - `Assets/TextMesh Pro/` — imported TMP essentials; do not edit
 
 Sprites use URP's `Sprite-Lit-Default` material (no 2D lights in the scene, so they render at full
@@ -87,14 +103,16 @@ Rules:
   if the spike art changes. The Finish Line trigger is a fixed 1×10 box (`autoTiling` off).
 - To add a new tile type, create a `DimensionTile` asset (kind, presence, runtime tile) and add it to the
   palette; a new kind also needs a runtime layer entry on `LevelTilemap`.
-- A new level scene needs a `LevelManager` (player + UI references), the Player and Canvas prefabs, and a
-  Main Camera with `CameraController` + `DimensionColor`. No GameManager.
+- A new level scene needs a `LevelManager` (player, UI, camera and finish line references), the Player, Background
+  and UI prefabs, a Canvas with HUD and Pause Menu (copy them from `Level 1`), an EventSystem, and a Main Camera
+  with `CameraController` + `DimensionColor`. No GameManager. Add it to the build settings after the last level.
 
 ## Controls
 
-Keyboard: `D` / `Space` / `Up` (hold) = jump, `A` = switch dimension; gamepad South = jump, West = switch
-(bindings are editable on the Player prefab). Touch: right half = jump (hold), left half = switch. A touch
-keeps the role of the half it started in.
+Keyboard: `D` / `Space` / `Up` (hold) = jump, `A` = switch dimension, `Esc` = pause; gamepad South = jump,
+West = switch, Start = pause (bindings are editable on the Player prefab / Pause Menu). Touch: right half = jump
+(hold), left half = switch. A touch keeps the role of the half it started in; touches starting on UI (the pause
+button) are ignored by the player. Only the pause button may be a raycast target during play.
 
 ## Driving the Unity Editor
 
@@ -106,7 +124,9 @@ package; see the `unity:unity-cli` skill). Use it instead of guessing:
 - `unity command console get` — read the Editor console.
 - `unity command script eval -- --code '...'` — run C# in the Editor (method body: no `using`, fully
   qualify types). Use it for scene/prefab/asset/settings changes.
-- Play-mode check: `editor.playmode start`, `capture game_view`, `editor.playmode stop`.
+- Play-mode check: `editor.playmode start`, `capture game_view`, `editor.playmode stop`. Don't edit `.cs` files
+  during play mode (the recompile drops the connection). `Screen` inside `script eval` is the Editor window, not
+  the game view: run screen-space checks (UI raycasts) from `InputSystem.onAfterUpdate` and log the result.
   `capture game_view --save_path` resolves relative to `Assets/`: delete the capture with
   `AssetDatabase.DeleteAsset` right after copying it out.
 - `runtime simulate_key` doesn't hold keys while the Editor is unfocused (the Input System resets devices).
