@@ -9,7 +9,7 @@ using UnityEngine.Tilemaps;
 [CreateAssetMenu(menuName = "Dimension Dash/Dimension Tile")]
 public class DimensionTile : Tile
 {
-    public enum Kind { Floor, Block, Spike }
+    public enum Kind { Floor, Block, Spike, Pad }
 
     [SerializeField]
     private Kind kind;

@@ -30,12 +30,14 @@ obstacles solid or ghosted.
   - `CameraController` — aspect-independent framing (min visible width), vertical dead-zone follow, `Shake`;
     previews the starting framing in the editor
   - `ParallaxLayer` — background layer following the camera at a scroll factor, wrapping a Tiled sprite
-  - `DimensionTile` (Tile) — authoring tile: kind (Floor/Block/Spike) + `DimensionPresence` + runtime tile;
+  - `DimensionTile` (Tile) — authoring tile: kind (Floor/Block/Spike/Pad) + `DimensionPresence` + runtime tile;
     optional 16-sprite connected preview (same neighbour masks as `ConnectedTile`)
   - `ConnectedTile` (TileBase) — runtime tile picking 1 of 16 sprites from its same-tilemap neighbours
     (N=1 E=2 S=4 W=8), so slabs glow only on exposed edges; collider type Grid
   - `LevelTilemap` — on load, copies the authoring tilemap's tiles onto the runtime layers, then hides it
   - `TilemapSkin` — visual-only copy of a runtime layer with another tile, filled on load (the daytime skins)
+  - `LaunchPad` — on the pad runtime layers (triggers): the player's `OnTriggerEnter2D` launches it at
+    `launchVelocity` (23; the jump is 16)
   - `SoundManager` — per-scene sound effects (`SoundManager.Play(Sfx)`, switch sounds from `DimensionChanged`)
     and a music source that survives scene loads (`DontDestroyOnLoad`); respects the SaveData audio settings
     (`ApplySettings()` after changing them). On the LevelManager object, and its own object in MainMenu
@@ -48,10 +50,11 @@ obstacles solid or ghosted.
   - `SettingToggle` — button flipping one SaveData setting; `UiButtons.OnClick` — click sound + clears UI
     selection (gamepad South is both Jump and Submit). Wire buttons through it
   - `StringHelper` — tag/layer name constants; keep in sync with Tags & Layers in ProjectSettings
-- `Assets/Scenes/` — `MainMenu` (build index 0) and `Level 1` (index 1). Build index N ≥ 1 is level N; the next
+- `Assets/Scenes/` — `MainMenu` (build index 0), `Level 1` (index 1) and `Level 2` (index 2, "Phase Shift": pits,
+  dimension bridges, launch pads, mid-air switching). Build index N ≥ 1 is level N; the next
   level is index N+1, and the scene name is the save key (renaming a level scene resets its records)
-- `Assets/Tiles/` — the 7 `DimensionTile`s (Floor, Block/Spike × Both/Reality/Shadow), the `Level` palette,
-  and `Runtime/` (the white Block/Floor `ConnectedTile`s and Spike tile the layers use; not for painting)
+- `Assets/Tiles/` — the 10 `DimensionTile`s (Floor, Block/Spike/Pad × Both/Reality/Shadow), the `Level` palette,
+  and `Runtime/` (the white Block/Floor `ConnectedTile`s and Spike/Pad tiles the layers use; not for painting)
 - `Assets/Prefabs/` — Player (orb), Level (Finish Line portal, Background sky/parallax shared by menu and levels),
   FX (death particles), UI
 - `Assets/Sprites/` — the "Neon Rift" art, generated procedurally (plain PNGs, white/grey so the dimension
@@ -76,7 +79,7 @@ cyan = Reality-only, magenta = Shadow-only, amber = both (red for spikes); the o
 Day skins (`Floor (Day)`, `Blocks_Both (Day)`, `Blocks_Reality (Day)` under Runtime Layers) are TilemapSkins
 shown only in Reality; keep them empty in the scene like the other layers.
 Sorting orders: background −100…−65 (sky glow, stars, sun/moon glow and discs, clouds, mountains, skyline, haze),
-motes −5, floor/blocks −2, day skins −1, finish −1, spikes 1, trail 9, orb 10–12, FX 20+.
+motes −5, floor/blocks −2, day skins −1, finish −1, spikes and pads 1, trail 9, orb 10–12, FX 20+.
 
 ## Building levels
 
@@ -87,15 +90,20 @@ A level is a `Grid` (cell size 1) with:
   level's start (Reality, daytime): blocks and floor join into slabs with the day textures, and Shadow-only tiles
   show ghosted as in play.
 - `Runtime Layers` — `Floor` (DimensionColor), `Blocks_Both/Reality/Shadow` (Ground layer, DimensionObject),
-  `Spikes_Both/Reality/Shadow` (`Obstacle` tag, DimensionObject). **Keep them empty**: `LevelTilemap` fills them
+  `Spikes_Both/Reality/Shadow` (`Obstacle` tag, DimensionObject), `Pads_Both/Reality/Shadow` (trigger
+  TilemapCollider2D without composite, `LaunchPad`, DimensionObject). **Keep them empty**: `LevelTilemap` fills them
   on load. Each has a static Rigidbody2D and a TilemapCollider2D merged into a CompositeCollider2D (geometry
-  type Polygons — the ground check needs it). Dimension colours and ghost alpha are set on these layers;
+  type Polygons — the ground check needs it); pads only have the trigger. Dimension colours and ghost alpha are set on these layers;
   keep the authoring tiles' preview colours in sync.
 
 Rules:
 
 - Keep all geometry on whole cells. The floor top is y = 0; the player is 1.25 tall, a spike 0.87.
-- Jump height is ~2.45 above the surface: step-ups of 2 cells max. A row the player runs under needs
+- Jump height is ~2.45 above the surface: step-ups of 2 cells max. A jump covers ~6.5 cells on flat ground, so a pit
+  of 4 is an easy jump and 9+ needs a bridge (blocks in the floor row) or a pad.
+- A launch pad rises ~5.4 and flies ~9.4 cells (0.94 s); it lands on a top-4 platform 3–7 cells ahead. Its trigger
+  is the bottom 0.6 of the cell (custom outline on `Sprites/Pad.png`). A pad under a low ceiling is deadly, and a
+  pad that appears under the player on a switch fires. Walls meant to be passed only by switching need 8 rows. A row the player runs under needs
   2 free cells above the surface, 3 if a hanging spike is there.
 - Rotate a hanging spike 180° with `[` / `]` on the brush; the rotation is copied to the runtime layer.
 - Visuals never define collision: blocks use Grid colliders, and the spike's collider is the custom physics

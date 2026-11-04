@@ -6,7 +6,7 @@ using UnityEngine;
 // Respects the SFX / Music settings in SaveData; call ApplySettings() after changing them.
 public class SoundManager : MonoBehaviour
 {
-    public enum Sfx { Jump, Land, SwitchToReality, SwitchToShadow, Death, Finish, Click }
+    public enum Sfx { Jump, Land, SwitchToReality, SwitchToShadow, Death, Finish, Click, Launch }
 
     [Serializable]
     private struct Effect

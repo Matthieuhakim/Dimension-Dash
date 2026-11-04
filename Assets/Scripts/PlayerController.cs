@@ -230,10 +230,27 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (Level.IsPlaying && other.CompareTag(StringHelper.FINISHLINE_TAG))
+        if (!Level.IsPlaying) return;
+
+        if (other.CompareTag(StringHelper.FINISHLINE_TAG))
         {
             Level.CompleteLevel();
         }
+        else if (other.TryGetComponent(out LaunchPad pad))
+        {
+            Launch(pad.LaunchVelocity);
+        }
+    }
+
+    // A pad overrides any jump in progress. Also fires when a pad appears under the player on a switch.
+    private void Launch(float velocity)
+    {
+        body.linearVelocity = new Vector2(runSpeed, velocity);
+        isGrounded = false;
+        lastGroundedTime = float.NegativeInfinity;
+        lastJumpPressTime = float.NegativeInfinity;
+        visual.Jumped();
+        SoundManager.Play(SoundManager.Sfx.Launch);
     }
 
     public void Explode()
